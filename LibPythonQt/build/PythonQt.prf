@@ -1,0 +1,22 @@
+#Python
+include ( python.prf )  
+
+# check if debug or release
+CONFIG(debug, debug|release) {
+  DEBUG_EXT = _d
+} else {
+  DEBUG_EXT =
+}
+
+
+# Python Qt
+INCLUDEPATH += $$PWD/../src
+
+win32::LIBS += $$PWD/../lib/PythonQt$${DEBUG_EXT}.lib
+unix::LIBS += -L$$PWD/../lib -lPythonQt$${DEBUG_EXT}
+
+#Python Qt All
+#INCLUDEPATH += $$PWD/../extensions/PythonQt_QtAll
+
+#win32::LIBS += $$PWD/../lib/PythonQt_QtAll$${DEBUG_EXT}.lib
+#unix::LIBS += -L$$PWD/../lib -lPythonQt_QtAll$${DEBUG_EXT}

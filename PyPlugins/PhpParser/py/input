@@ -1,0 +1,9 @@
+
+{
+    # test program
+    a = "xyz"
+    b = "abc"
+    c = "def"
+    c = "333"    # overwrites def
+    d = c + a + b
+}

@@ -1,0 +1,3 @@
+/Ignore/*
+*.pro.user
+/PyPlugins/PhpParser/py/__pycache__/*

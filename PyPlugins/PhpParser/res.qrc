@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>py/GettingStarted.py</file>
+        <file>ui/FtpUploader.ui</file>
+    </qresource>
+</RCC>

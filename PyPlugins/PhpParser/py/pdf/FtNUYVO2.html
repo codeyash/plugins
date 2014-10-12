@@ -1,0 +1,2176 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"  
+  "http://www.w3.org/TR/html4/loose.dtd">  
+<html > 
+<head><title>Direct Left-Recursive Parsing Expression Grammars</title> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"> 
+<meta name="generator" content="TeX4ht (http://www.cse.ohio-state.edu/~gurari/TeX4ht/)"> 
+<meta name="originator" content="TeX4ht (http://www.cse.ohio-state.edu/~gurari/TeX4ht/)"> 
+<!-- html --> 
+<meta name="src" content="direct_left_recursive_pegs.tex"> 
+<meta name="date" content="2010-12-30 11:06:00"> 
+<link href="/laurie/reset.css" rel="stylesheet" type="text/css" />
+<link href="/laurie/standard.css" rel="stylesheet" type="text/css" />
+<link href="http://fonts.googleapis.com/css?family=Bree+Serif" rel="stylesheet" type="text/css" />
+<link href="http://fonts.googleapis.com/css?family=Pontano+Sans" rel="stylesheet" type="text/css" />
+<link href="http://fonts.googleapis.com/css?family=Lekton" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="../paper.css">
+<link rel="stylesheet" type="text/css" href="../paper.css">
+<link rel="stylesheet" type="text/css" href="direct_left_recursive_pegs.css"> 
+</head>
+
+
+
+
+
+
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<head>
+<title>Laurence Tratt</title>
+<link rel="stylesheet" type="text/css" href="/laurie/standard.css">
+
+</head>
+<body id="bg">
+
+<table cellpadding="0" cellspacing="0" width="100%" height="100%">
+<tr>
+<td>
+<table id="header">
+<tr>
+<td align = "left"><a href = "/laurie/">Home</a> > <a href="../../../">Research</a> > <a href="../../">Publications</a></td>
+<td align = "right">e-mail: <A HRef = "mailto:laurie@tratt.net">laurie@tratt.net</A> &nbsp;&nbsp; github: <a href="https://github.com/ltratt/">ltratt</a> &nbsp;&nbsp; twitter: <a href="http://twitter.com/laurencetratt">@laurencetratt</a></td>
+</tr>
+</table>
+</td>
+</tr>
+
+<tr>
+<td height="100%" valign="top">
+<div id="main">
+
+<div align="center" style="padding: 30px; width:35em; margin: auto; text-align: justify"><b>Cite this paper as:</b> <em>Direct left-recursive parsing expression grammars, Laurence Tratt, Technical report EIS-10-01, School of Engineering and Information Sciences, Middlesex University, October 2010 (<a href="../../bibtex/tratt__direct_left_recursive_parsing_expression_grammars.bib">BibTeX file</a>).</em>
+
+ <p><b>Also available as:</b> <a href="../../papers/tratt__direct_left_recursive_parsing_expression_grammars.pdf">PDF</a>.
+
+
+
+
+</div>
+
+
+<!-- main content -->
+
+
+   <div class="maketitle">
+
+
+
+<h1>Direct Left-Recursive Parsing Expression Grammars</h1>
+<div><span 
+class="cmr-12">Laurence Tratt </span><span 
+class="cmtt-12"><a href="mailto:laurie@tratt.net">laurie@tratt.net</a></span></div><br />
+<div class="date" ><span 
+class="cmr-12">October 25, 2010</span></div>
+   </div>
+   <div 
+class="abstract" 
+>
+<div class="center" 
+>
+<!--l. 36--><p class="noindent" >
+<!--l. 36--><p class="noindent" ><span 
+class="cmbx-10">Abstract</span></div>
+     <!--l. 37--><p class="noindent" ><span 
+class="cmbx-10">Abstract. </span><span 
+class="cmr-10">Parsing Expression Grammars (PEGs) are specifications</span>
+     <span 
+class="cmr-10">of  unambiguous  recursive-descent  style  parsers.  PEGs  incorporate</span>
+     <span 
+class="cmr-10">both  lexing  and  parsing  phases  and  have  valuable  properties,</span>
+     <span 
+class="cmr-10">such  as  being  closed  under  composition.  In  common  with  most</span>
+     <span 
+class="cmr-10">recursive-descent  systems,  raw  PEGs  cannot  handle  left-recursion;</span>
+     <span 
+class="cmr-10">traditional approaches to left-recursion elimination lead to incorrect</span>
+     <span 
+class="cmr-10">parses. In this paper, I show how the approach proposed for direct</span>
+     <span 
+class="cmr-10">left-recursive Packrat parsing by Warth </span><span 
+class="cmti-10">et al. </span><span 
+class="cmr-10">can be adapted for &#8216;pure&#8217;</span>
+     <span 
+class="cmr-10">PEGs. I then demonstrate that this approach results in incorrect parses</span>
+     <span 
+class="cmr-10">for some PEGs, before outlining a restrictive subset of left-recursive</span>
+     <span 
+class="cmr-10">PEGs which can safely work with this algorithm. Finally I suggest an</span>
+     <span 
+class="cmr-10">alteration to Warth </span><span 
+class="cmti-10">et al.</span><span 
+class="cmr-10">&#8217;s algorithm that can correctly parse a less</span>
+     <span 
+class="cmr-10">restrictive subset of directly recursive PEGs.</span>
+</div>
+   <h3 class="sectionHead"><span class="titlemark">1   </span> <a 
+ id="x1-10001"></a>Introduction</h3>
+<!--l. 43--><p class="noindent" >Parsing is the act of discovering the structure of text with respect to a particular
+grammar. Parsing algorithms such as LL and LR parsing were developed
+alongside the first generation of high level programming languages. In general,
+
+such parsing algorithms aim to parse subsets of the full class of Context Free
+Grammars (CFGs). By limiting the class of parseable languages, such
+algorithms are both time and space efficient, considerations that were of huge
+practical importance given the performance limitations of hardware available
+at the time. In this classical sense, parsing is generally split into two
+phases. In the first phase, <span 
+class="cmti-10x-x-109">tokenization </span>(or &#8216;lexing&#8217;) splits the input into
+distinct tokens (or &#8216;lexemes&#8217;), which can be broadly thought of as being
+similar to splitting English text into words. In the second phase, the token
+stream is parsed, checking that it conforms to the user&#8217;s grammar and,
+optionally, ordering it into a tree structure (the <span 
+class="cmti-10x-x-109">parse tree</span>). While both
+tokenizers and grammars can be written by hand, it is common to use
+specialised tools to generate them from customised domain specific languages
+(e.g. the ubiquitous <span 
+class="cmtt-10x-x-109">yacc </span>tool). The speed of modern computers means
+that relatively inefficient approaches to parsing are now often practical.
+For example, Earley&#8217;s algorithm <span class="cite">[<a 
+href="#Xearley__an_efficient_context_free_parsing_algorithm">1</a>]</span> can parse the entire class of CFGs;
+while it is O(n<sup><span 
+class="cmr-8">3</span></sup>), even a simple implementation can parse in the low
+thousands of lines per second <span class="cite">[<a 
+href="#Xtratt__domain_specific_language_implementation_via_compile_time_meta_programming">8</a>]</span>. For many people, parsing is a solved
+problem: there are a wide variety of well understood algorithms, with a
+reasonable body of knowledge about which are the most suitable in differing
+circumstances.
+<!--l. 45--><p class="indent" >   Traditional parsing algorithms have one major weakness: it is at best difficult,
+and generally impossible, to combine two parsers. For example, one may wish to
+embed SQL inside Java so that SQL expressions can be used wherever a Java
+expression is expected; such examples require a parser which understands both
+constituent languages. Ideally one would like to take existing, separate, Java and
+SQL parsers and combine them. Many parsing algorithms restrict the
+class of grammars they can accept (in general to a subset of CFGs);
+for most such approaches, combining two valid grammars can lead to a
+grammar which falls outside the class of valid grammars. Equally critically,
+the separation of the tokenization and parsing phases hinders switching
+between the different language parsers. Put simply, since tokenizers are
+largely stateless they cannot know when to stop tokenizing (meaning
+that the Java tokenizer may raise an error when it comes across SQL
+input)&#8212;attempts to hack around this problem are rarely pleasant and generally
+fragile.
+<!--l. 47--><p class="indent" >   Visser introduced arguably the first practical scannerless parsing approach <span class="cite">[<a 
+href="#Xvisser__scannerless_generalized_lr_parsing">9</a>]</span>,
+which unites the tokenization and parsing phases, making the combination of
+grammars practical. Visser&#8217;s approach has no theoretical problem combining
+grammars, since it can parse the full class of CFGs, and CFGs are closed under
+composition&#8212;however a combined grammar may contain new ambiguities
+relative to its constituent parts. Since the static detection of ambiguity is, in
+general, impossible, this can make grammar composition a difficult exercise in
+practice.
+<!--l. 49--><p class="indent" >   Ford introduced Parsing Expression Grammars (PEGs) <span class="cite">[<a 
+href="#Xford__parsing_expression_grammars_a_recognition_based_syntactic_foundation">3</a>]</span> which are
+
+an alternative approach to scannerless parsing. PEGs have three major
+differences when compared to other parsing approaches. First, the class of
+languages PEGs can express has no relation to CFGs. Second, PEGs
+describe an unambiguous parser; a string is either not parsed by a PEG or
+has a single unambiguous parse. Third, PEG parsers are closed under
+union, intersection, and complement. Because of this last point, PEGs
+are of substantial interest to those looking to combine parsers (see e.g.
+<span class="cite">[<a 
+href="#Xgrimm__better_extensibility_through_modular_syntax">4</a>,&#x00A0;<a 
+href="#Xseaton__a_programming_language_where_the_syntax_and_semantics_are_mutable_at_runtime">7</a>]</span>).
+<!--l. 51--><p class="indent" >   Although PEGs can perform limited context sensitive parsing (through
+semantic predicates, which are effectively side-conditions on parsing rules), in
+practice they resemble a combination of simple regular expressions and
+recursive-descent parsing. Because of this latter point, PEGs cannot handle
+left-recursion, which is when a rule refers to itself before any input has been
+consumed. For example &#8211; assuming a suitable tokenizer &#8211; a typical CFG
+grammar for a subset of mathematical expressions might be expressed as
+follows:
+   <div class="fancyvrb" id="fancyvrb1">
+<a 
+ id="x1-1002r1"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;Expr</span><span 
+class="cmtt-9">&#x00A0;::=</span><span 
+class="cmtt-9">&#x00A0;Expr</span><span 
+class="cmtt-9">&#x00A0;"+"</span><span 
+class="cmtt-9">&#x00A0;Prim</span>
+<br class="fancyvrb" /><a 
+ id="x1-1004r2"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;|</span><span 
+class="cmtt-9">&#x00A0;Expr</span><span 
+class="cmtt-9">&#x00A0;"-"</span><span 
+class="cmtt-9">&#x00A0;Prim</span>
+<br class="fancyvrb" /><a 
+ id="x1-1006r3"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;|</span><span 
+class="cmtt-9">&#x00A0;Prim</span>
+<br class="fancyvrb" /><a 
+ id="x1-1008r4"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;Prim</span><span 
+class="cmtt-9">&#x00A0;::=</span><span 
+class="cmtt-9">&#x00A0;"("</span><span 
+class="cmtt-9">&#x00A0;Expr</span><span 
+class="cmtt-9">&#x00A0;")"</span>
+<br class="fancyvrb" /><a 
+ id="x1-1010r5"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;|</span><span 
+class="cmtt-9">&#x00A0;INT</span>
+   </div>
+<!--l. 59--><p class="noindent" >The directly translated PEG parser looks as follows:
+   <div class="fancyvrb" id="fancyvrb2">
+<a 
+ id="x1-1012r1"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;Expr</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;Expr</span><span 
+class="cmtt-9">&#x00A0;"+"</span><span 
+class="cmtt-9">&#x00A0;Prim</span>
+<br class="fancyvrb" /><a 
+ id="x1-1014r2"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Expr</span><span 
+class="cmtt-9">&#x00A0;"-"</span><span 
+class="cmtt-9">&#x00A0;Prim</span>
+<br class="fancyvrb" /><a 
+ id="x1-1016r3"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Prim</span>
+<br class="fancyvrb" /><a 
+ id="x1-1018r4"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;Prim</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;"("</span><span 
+class="cmtt-9">&#x00A0;Expr</span><span 
+class="cmtt-9">&#x00A0;")"</span>
+<br class="fancyvrb" /><a 
+ id="x1-1020r5"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Int</span>
+<br class="fancyvrb" /><a 
+ id="x1-1022r6"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;Int</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;[0-9]+</span>
+   </div>
+<!--l. 68--><p class="noindent" >Unfortunately, as with recursive descent parsers in general, the left-recursion in
+the <span 
+class="cmtt-10x-x-109">Expr </span>rule means that a PEG parser will enter an infinite loop and
+never terminate. Since many standard grammar constructs are most
+naturally represented with left-recursion, this limitation is often frustrating in
+practice. As I show in Section <a 
+href="#x1-30003">3<!--tex4ht:ref: traditional left-recursion removal --></a>, traditional left-recursion techniques
+cannot provide the expected result with PEGs. Thus, while grammars
+can be manually rewritten to avoid left-recursion, it is difficult to verify
+that the language accepted by the rewritten grammar is identical to the
+original.
+<!--l. 70--><p class="indent" >   Warth <span 
+class="cmti-10x-x-109">et al. </span>recently proposed a modification to handle left-recursion in
+Packrat parsers <span class="cite">[<a 
+href="#Xwarth_douglas_millstein__packrat_parsers_can_support_left_recursion">10</a>]</span>. Packrat parsers are essentially an optimisation of PEGs,
+utilising memoisation to make Packrat parsers O(n) <span class="cite">[<a 
+href="#Xford__packrat_parsing_simple_powerful_lazy_linear_time_functional_pearl">2</a>]</span>; Warth <span 
+class="cmti-10x-x-109">et al.</span>&#8217;s approach
+
+relies on Packrat memoisation. Warth <span 
+class="cmti-10x-x-109">et al. </span>first present a relatively simple
+adaption of Packrat parsing to cope with direct left-recursion, before detailing a
+much more complicated adaption to cope with indirect left-recursion. As will
+become apparent as this paper continues, direct recursion raises sufficiently many
+issues that I concentrate solely on it. It should be noted that while Packrat
+parsing obviously adds an extra layer of complexity over &#8216;pure&#8217; PEGs, contrary to
+expectations it often slows parsing down when used blindly for every rule
+<span class="cite">[<a 
+href="#Xredziejowski__some_aspects_of_parsing_expression_grammar">6</a>]</span>.
+<!--l. 72--><p class="indent" >   The first research challenge tackled in this paper is: can Warth <span 
+class="cmti-10x-x-109">et al.</span>&#8217;s
+approach be adapted to a &#8216;pure&#8217; PEG parser without Packrat memoisation
+(Section <a 
+href="#x1-60004.2">4.2<!--tex4ht:ref: a pure peg version of warth et al --></a>)? Having then identified that certain PEG grammars then lead to
+incorrect parses (Section <a 
+href="#x1-80005">5<!--tex4ht:ref: the warth problem --></a>) the second research question tackled is: can a
+well-defined subset of PEGs be parsed correctly with Warth <span 
+class="cmti-10x-x-109">et al.</span>&#8217;s algorithm
+(Section <a 
+href="#x1-100006.1">6.1<!--tex4ht:ref: fixing warth et al --></a>)? The final research question tackled is: can Warth <span 
+class="cmti-10x-x-109">et al.</span>&#8217;s algorithm
+be modified so that a wider set of directly recursive PEGs be parsed correctly
+(Section <a 
+href="#x1-120006.3">6.3<!--tex4ht:ref: parse nearly all left-recursive right-recursive rules --></a>)?
+<!--l. 76--><p class="noindent" >
+   <h3 class="sectionHead"><span class="titlemark">2   </span> <a 
+ id="x1-20002"></a>PEG overview</h3>
+<!--l. 78--><p class="noindent" >A full overview of PEGs can be found in Ford&#8217;s original paper <span class="cite">[<a 
+href="#Xford__parsing_expression_grammars_a_recognition_based_syntactic_foundation">3</a>]</span>. This section is
+a brief refresher.
+<!--l. 80--><p class="indent" >   <hr class="figure"><div class="figure" 
+>
+
+<a 
+ id="x1-2001r1"></a>
+
+<div class="center" 
+>
+<!--l. 81--><p class="noindent" >
+<div class="tabular"> <table id="TBL-2" class="tabular" 
+cellspacing="0" cellpadding="0"  
+><colgroup id="TBL-2-1g"><col 
+id="TBL-2-1"><col 
+id="TBL-2-2"></colgroup><tr  
+ style="vertical-align:baseline;" id="TBL-2-1-"><td  style="white-space:nowrap; text-align:left;" id="TBL-2-1-1"  
+class="td11"><span 
+class="cmtt-10x-x-109">"</span><span 
+class="cmitt-10x-x-109">s</span><span 
+class="cmtt-10x-x-109">"   </span></td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-1-2"  
+class="td11">Match string literal <span 
+class="cmitt-10x-x-109">s             </span></td>
+</tr><tr  
+ style="vertical-align:baseline;" id="TBL-2-2-"><td  style="white-space:nowrap; text-align:left;" id="TBL-2-2-1"  
+class="td11"><span 
+class="cmtt-10x-x-109">[</span><span 
+class="cmitt-10x-x-109">c</span><span 
+class="cmtt-10x-x-109">]   </span></td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-2-2"  
+class="td11">Match against character class <span 
+class="cmitt-10x-x-109">c    </span></td>
+</tr><tr  
+ style="vertical-align:baseline;" id="TBL-2-3-"><td  style="white-space:nowrap; text-align:left;" id="TBL-2-3-1"  
+class="td11"><span 
+class="cmtt-10x-x-109">.      </span></td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-3-2"  
+class="td11">Match any character                     </td>
+</tr><tr  
+ style="vertical-align:baseline;" id="TBL-2-4-"><td  style="white-space:nowrap; text-align:left;" id="TBL-2-4-1"  
+class="td11"><span 
+class="cmtt-10x-x-109">(</span><span 
+class="cmitt-10x-x-109">e</span><span 
+class="cmtt-10x-x-109">)   </span></td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-4-2"  
+class="td11">Grouping                                    </td>
+</tr><tr  
+ style="vertical-align:baseline;" id="TBL-2-5-"><td  style="white-space:nowrap; text-align:left;" id="TBL-2-5-1"  
+class="td11"><span 
+class="cmitt-10x-x-109">e</span><span 
+class="cmtt-10x-x-109">?    </span></td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-5-2"  
+class="td11">Match <span 
+class="cmitt-10x-x-109">e </span>zero or one times             </td></tr><tr  
+ style="vertical-align:baseline;" id="TBL-2-6-"><td  style="white-space:nowrap; text-align:left;" id="TBL-2-6-1"  
+class="td11"><span 
+class="cmitt-10x-x-109">e</span><span 
+class="cmtt-10x-x-109">* </span></td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-6-2"  
+class="td11">Match <span 
+class="cmitt-10x-x-109">e </span>zero or more times</td>
+</tr><tr  
+ style="vertical-align:baseline;" id="TBL-2-7-"><td  style="white-space:nowrap; text-align:left;" id="TBL-2-7-1"  
+class="td11"><span 
+class="cmitt-10x-x-109">e</span><span 
+class="cmtt-10x-x-109">+    </span></td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-7-2"  
+class="td11">Match <span 
+class="cmitt-10x-x-109">e </span>one or more times            </td>
+</tr><tr  
+ style="vertical-align:baseline;" id="TBL-2-8-"><td  style="white-space:nowrap; text-align:left;" id="TBL-2-8-1"  
+class="td11"><span 
+class="cmtt-10x-x-109">&amp;</span><span 
+class="cmitt-10x-x-109">e     </span></td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-8-2"  
+class="td11">Non-consuming match of <span 
+class="cmitt-10x-x-109">e        </span></td>
+</tr><tr  
+ style="vertical-align:baseline;" id="TBL-2-9-"><td  style="white-space:nowrap; text-align:left;" id="TBL-2-9-1"  
+class="td11"><span 
+class="cmtt-10x-x-109">!</span><span 
+class="cmitt-10x-x-109">e     </span></td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-9-2"  
+class="td11">Non-consuming negative match of <span 
+class="cmitt-10x-x-109">e</span></td>
+</tr><tr  
+ style="vertical-align:baseline;" id="TBL-2-10-"><td  style="white-space:nowrap; text-align:left;" id="TBL-2-10-1"  
+class="td11"><span 
+class="cmitt-10x-x-109">e</span><sub><span 
+class="cmr-8">1</span></sub>  <span 
+class="cmitt-10x-x-109">e</span><sub><span 
+class="cmr-8">2</span></sub>    </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-10-2"  
+class="td11">Sequence                                    </td>
+</tr><tr  
+ style="vertical-align:baseline;" id="TBL-2-11-"><td  style="white-space:nowrap; text-align:left;" id="TBL-2-11-1"  
+class="td11"><span 
+class="cmitt-10x-x-109">e</span><sub><span 
+class="cmr-8">1</span></sub>  <span 
+class="cmtt-10x-x-109">/ </span><span 
+class="cmitt-10x-x-109">e</span><sub><span 
+class="cmr-8">2</span></sub></td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-11-2"  
+class="td11">Ordered choice                            </td>
+</tr><tr  
+ style="vertical-align:baseline;" id="TBL-2-12-"><td  style="white-space:nowrap; text-align:left;" id="TBL-2-12-1"  
+class="td11">       </td></tr></table></div></div>
+<br /> <div class="caption" 
+><span class="id">Figure&#x00A0;1: </span><span  
+class="content">PEG operators.</span></div><!--tex4ht:label?: x1-2001r1 -->
+
+<!--l. 98--><p class="indent" >   </div><hr class="endfigure">
+<!--l. 100--><p class="indent" >   Figure <a 
+href="#x1-2001r1">1<!--tex4ht:ref: peg operators --></a> shows the PEG operators. The crucial difference between
+PEGs and CFGs is the <span 
+class="cmti-10x-x-109">ordered choice </span>operator <span 
+class="cmitt-10x-x-109">e</span><sub><span 
+class="cmr-8">1</span></sub>  <span 
+class="cmtt-10x-x-109">/ </span><span 
+class="cmitt-10x-x-109">e</span><sub><span 
+class="cmr-8">2</span></sub>. This means
+&#8216;try <span 
+class="cmitt-10x-x-109">e</span><sub><span 
+class="cmr-8">1</span></sub> first; if it succeeds, the ordered choice immediately succeeds and
+completes. Only if <span 
+class="cmitt-10x-x-109">e</span><sub><span 
+class="cmr-8">1</span></sub> fails should <span 
+class="cmitt-10x-x-109">e</span><sub><span 
+class="cmr-8">2</span></sub> be tried.&#8217; In other words, once an
+earlier part of an ordered choice matches against a piece of text, the
+ordered choice has committed to that piece of text, and latter parts of the
+ordered choice are never tried. Therefore an ordered choice <span 
+class="cmtt-10x-x-109">a / ab </span>will not
+match against the complete string &#8216;ab&#8217; as the ordered choice immediately
+matches <span 
+class="cmtt-10x-x-109">a</span>, succeeds, and does not try the second part of the ordered
+choice. This in contrast to CFGs where both <span 
+class="cmitt-10x-x-109">e</span><sub><span 
+class="cmr-8">1</span></sub> and <span 
+class="cmitt-10x-x-109">e</span><sub><span 
+class="cmr-8">2</span></sub> are on an equal
+footing.
+<!--l. 102--><p class="indent" >   The <span 
+class="cmtt-10x-x-109">&amp;</span><span 
+class="cmitt-10x-x-109">e </span>and <span 
+class="cmtt-10x-x-109">!</span><span 
+class="cmitt-10x-x-109">e </span>operators are semantic predicates which succeed if <span 
+class="cmti-10x-x-109">e </span>matches
+or does not match, respectively; note that they do not advance the input
+position. Semantic predicates are the other significant difference between PEGs
+and CFGs.
+<!--l. 104--><p class="indent" >   Most other aspects of PEGs are similar to CFGs. A PEG grammar consists of
+one or more rules; rules are referenced by their name. In keeping with Ford&#8217;s
+original definition, a PEG rule <span 
+class="cmmi-10x-x-109">R </span>with a body expression <span 
+class="cmmi-10x-x-109">e </span>is written <span 
+class="cmmi-10x-x-109">R </span><span 
+class="cmtt-10x-x-109">&#x003C;-</span>
+<span 
+class="cmmi-10x-x-109">e</span>.
+   <h3 class="sectionHead"><span class="titlemark">3   </span> <a 
+ id="x1-30003"></a>Traditional left-recursion removal</h3>
+<!--l. 112--><p class="noindent" >Put simply, left-recursive PEGs are those where a rule calls itself without
+advancing the input position being parsed; in other words, left-recursive
+PEGs cause infinite loops. Consider this example from Warth <span 
+class="cmti-10x-x-109">et al.</span>:
+   <div class="fancyvrb" id="fancyvrb3">
+<a 
+ id="x1-3002r1"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;"-"</span><span 
+class="cmtt-9">&#x00A0;num</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;num</span>
+<br class="fancyvrb" /><a 
+ id="x1-3004r2"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;num</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;[0-9]+</span>
+   </div>
+<!--l. 117--><p class="noindent" >When this parses against an input, the first action of the <span 
+class="cmtt-10x-x-109">expr </span>rule is to call itself;
+once called, the <span 
+class="cmtt-10x-x-109">expr </span>rule then calls itself again recursively. Since no input is
+consumed before <span 
+class="cmtt-10x-x-109">expr </span>calls itself, no progress is ever made (indeed, the general
+result of running such a PEG is a &#8216;stack exhausted&#8217; error). As <span 
+class="cmtt-10x-x-109">expr </span>calls
+itself directly, this example shows a <span 
+class="cmti-10x-x-109">direct </span>left-recursive rule. <span 
+class="cmti-10x-x-109">Indirect</span>
+left-recursion is when a rule <span 
+class="cmmi-10x-x-109">R </span>calls a rule <span 
+class="cmmi-10x-x-109">R</span><span 
+class="cmsy-10x-x-109">&#x2032; </span>which then calls <span 
+class="cmmi-10x-x-109">R </span>(where
+<span 
+class="cmmi-10x-x-109">R </span>and <span 
+class="cmmi-10x-x-109">R</span><span 
+class="cmsy-10x-x-109">&#x2032; </span>are distinct rules). Indirect left-recursion adds a number of
+challenges over direct left-recursion which I do not consider further in this
+paper.
+<!--l. 119--><p class="indent" >   The problem of left-recursion is a long-standing issue in LL and recursive-descent
+parsing. In this section I show a simplified version of the standard technique for
+left-recursion elimination from parsing theory (see e.g. <span class="cite">[<a 
+href="#Xgrune_jacobs__parsing_techniques">5</a>]</span> for more details), and
+
+demonstrate why it is not suitable for PEGs. In essence, a left-recursive
+rule:<br 
+class="newline" />   <span 
+class="cmmi-10x-x-109">&nbsp;&nbsp;&nbsp;&nbsp;R</span> <span 
+class="cmsy-10x-x-109">&#x2192; </span><span 
+class="cmmi-10x-x-109">R</span><span 
+class="cmmi-10x-x-109">&#x00A0;a</span>
+  &#x00A0;   <span 
+class="cmsy-10x-x-109">|</span><span 
+class="cmmi-10x-x-109">&#x00A0;b</span>                                                            <br 
+class="newline" /> can be translated to the right-recursive:<br 
+class="newline" />   <span 
+class="cmmi-10x-x-109">&nbsp;&nbsp;&nbsp;&nbsp;R</span> <span 
+class="cmsy-10x-x-109">&#x2192; </span><span 
+class="cmmi-10x-x-109">b</span><span 
+class="cmmi-10x-x-109">&#x00A0;R</span><span 
+class="cmsy-10x-x-109">&#x2032;</span><br class="newline"/>&nbsp;&nbsp;&nbsp;
+  <span 
+class="cmmi-10x-x-109">R</span><span 
+class="cmsy-10x-x-109">&#x2032;</span><span 
+class="cmsy-10x-x-109">&#x2192; </span><span 
+class="cmmi-10x-x-109">a</span><span 
+class="cmmi-10x-x-109">&#x00A0;R</span><span 
+class="cmsy-10x-x-109">&#x2032;</span>
+  &#x00A0;   <span 
+class="cmsy-10x-x-109">| </span><span 
+class="cmmi-12">&#x03B5;</span>                                                             <br 
+class="newline" /> The language accepted by the latter non-left-recursive CFG is provably the same
+as the former left-recursive CFG. It therefore seems sensible to apply this
+approach to left-recursive PEG, rewriting the example from above as
+follows:
+   <div class="fancyvrb" id="fancyvrb4">
+<a 
+ id="x1-3006r1"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;num</span><span 
+class="cmtt-9">&#x00A0;expr2</span>
+<br class="fancyvrb" /><a 
+ id="x1-3008r2"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;expr2</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;"-"</span><span 
+class="cmtt-9">&#x00A0;num</span><span 
+class="cmtt-9">&#x00A0;expr2</span>
+<br class="fancyvrb" /><a 
+ id="x1-3010r3"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;/</span>
+<br class="fancyvrb" /><a 
+ id="x1-3012r4"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;num</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;[0-9]+</span>
+   </div>
+<!--l. 133--><p class="noindent" >If we use this new PEG to parse the input <span 
+class="cmtt-10x-x-109">1-2-3 </span>and write a standard tree walker
+over it to evaluate the expression we get the answer 2, instead of the expected -4.
+Where we expect <span 
+class="cmtt-10x-x-109">1-2-3 </span>to parse as equivalent to <span 
+class="cmtt-10x-x-109">(((1)-2)-3)</span>, it has in fact
+been parsed as the equivalent of <span 
+class="cmtt-10x-x-109">(1-(2-(3)))</span>; the left-recursion elimination has
+turned the left-associative left-recursive PEG into a right-associative
+right-recursive PEG.
+<!--l. 135--><p class="indent" >   Attempting to restore left-associativity is difficult and, in the presence of
+semantic actions or predicates, impossible. Grimm&#8217;s <span 
+class="cmti-10x-x-109">Rats! </span><span class="cite">[<a 
+href="#Xgrimm__better_extensibility_through_modular_syntax">4</a>]</span> uses traditional
+left-recursion elimination but &#8216;promises&#8217; to transparently transform the resulting
+right-associative parse tree into the equivalent left-associative structure.
+This technique is only applicable to those directly left-recursive rules
+which do not call external code (e.g. no semantic predicates), as the order
+that the text is parsed is still incorrect; thus, actions cannot appear in
+such rules, as they could unwittingly be victims of the incorrect parse
+order.
+<!--l. 137--><p class="indent" >   In summary, naïve traditional left-recursion destroys left-associativity. While
+in certain limited situations left-associativity can be restored <span 
+class="cmti-10x-x-109">ex post facto</span>, this is
+not a general solution.
+<!--l. 141--><p class="noindent" >
+   <h3 class="sectionHead"><span class="titlemark">4   </span> <a 
+ id="x1-40004"></a>Warth <span 
+class="cmti-10x-x-109">et al.</span>&#8217;s proposal</h3>
+
+<!--l. 143--><p class="noindent" >Warth <span 
+class="cmti-10x-x-109">et al. </span>propose a solution to both direct and indirect left-recursion in
+PEGs. Their approach is based on the concept of &#8216;growing the seed&#8217;. In essence,
+when direct left-recursion on a rule <span 
+class="cmmi-10x-x-109">R </span>at input position <span 
+class="cmmi-10x-x-109">P </span>is detected a default
+<span 
+class="cmti-10x-x-109">seed </span>value (initially set to a &#8216;fail&#8217; value) is immediately returned for subsequent
+references to <span 
+class="cmmi-10x-x-109">R</span>, meaning that infinite recursion is avoided. An unbounded loop is
+then started; whenever the body of <span 
+class="cmmi-10x-x-109">R </span>matches input successfully, the seed is
+updated (or &#8216;grown&#8217;), and <span 
+class="cmmi-10x-x-109">R </span>is reevaluated at input position <span 
+class="cmmi-10x-x-109">P</span>. When no further
+input is matched, or if less input than the previous iteration is matched,
+the loop is finished. The seed value (which may not have been grown
+beyond &#8216;fail&#8217;) is then returned. In essence, the parser turns from (recursive)
+top-down in normal operation to (iterative) bottom-up when left-recursion is
+detected.
+<!--l. 145--><p class="indent" >   In this section I first show that Warth <span 
+class="cmti-10x-x-109">et al.</span>&#8217;s approach is not limited to
+Packrat parsers and can be naturally applied to pure PEGs (Section <a 
+href="#x1-60004.2">4.2<!--tex4ht:ref: a pure peg version of warth et al --></a>). I also
+provide a much more detailed explanation of the parser than Warth et.
+al.
+<!--l. 148--><p class="noindent" >
+   <h4 class="subsectionHead"><span class="titlemark">4.1   </span> <a 
+ id="x1-50004.1"></a>Conventions</h4>
+<!--l. 150--><p class="noindent" >Sets are mutable datatypes (used conventionally otherwise), written as
+<span 
+class="cmsy-10x-x-109">{</span><span 
+class="cmmi-10x-x-109">E</span><sub><span 
+class="cmr-8">0</span></sub><span 
+class="cmmi-10x-x-109">,...,E</span><sub><span 
+class="cmmi-8">n</span></sub><span 
+class="cmsy-10x-x-109">}</span>. An element <span 
+class="cmmi-10x-x-109">E </span>can be added to a set <span 
+class="cmmi-10x-x-109">S </span>with <span 
+class="cmcsc-10x-x-80">ADD</span><span 
+class="cmti-10x-x-109">(S, E) </span>and removed
+with <span 
+class="cmcsc-10x-x-80">DEL</span><span 
+class="cmti-10x-x-109">(S, E)</span>.
+<!--l. 152--><p class="indent" >   Maps are data types relating keys to elements. A map is written
+<span 
+class="cmmi-10x-x-109">&#x003C;K</span><sub><span 
+class="cmr-8">0</span></sub>:<span 
+class="cmmi-10x-x-109">E</span><sub><span 
+class="cmr-8">0</span></sub>, ..., <span 
+class="cmmi-10x-x-109">K</span><sub><span 
+class="cmmi-8">n</span></sub>:<span 
+class="cmmi-10x-x-109">E</span><sub><span 
+class="cmmi-8">n</span></sub><span 
+class="cmmi-10x-x-109">&#x003E; </span>where <span 
+class="cmmi-10x-x-109">K </span>represents a key and <span 
+class="cmmi-10x-x-109">E </span>an element. In
+this paper, keys are either integers or rule names; elements can be of an
+arbitrary type. The existence of a key <span 
+class="cmmi-10x-x-109">K </span>within a map <span 
+class="cmmi-10x-x-109">M </span>can be checked
+with <span 
+class="cmmi-10x-x-109">K </span><span 
+class="cmsy-10x-x-109">&#x2208; </span><span 
+class="cmmi-10x-x-109">M</span>. The corresponding element <span 
+class="cmmi-10x-x-109">E </span>for a key <span 
+class="cmmi-10x-x-109">K </span>in a map <span 
+class="cmmi-10x-x-109">M</span>
+can be obtained with <span 
+class="cmmi-10x-x-109">M</span>[<span 
+class="cmmi-10x-x-109">K</span>]; looking up a non-existent key is a fatal
+error.
+<!--l. 155--><p class="noindent" >
+   <h4 class="subsectionHead"><span class="titlemark">4.2   </span> <a 
+ id="x1-60004.2"></a>A pure PEG version of Warth <span 
+class="cmti-10x-x-109">et al.</span>&#8217;s proposal</h4>
+<!--l. 158--><p class="noindent" >While Warth <span 
+class="cmti-10x-x-109">et al.</span>&#8217;s approach is given in terms of Packrat parsing, there is
+nothing about the approach which makes it fundamentally incompatible with a
+pure PEG approach&#8212;Packrat memoisation is used to detect left-recursion
+and (in an adaption over the original Packrat definition) to store the
+growing seed. In this section I show that by using a simple map to record
+left-recursive seed growth, one can provide a pure PEG analogue of the
+Packrat approach, without the (conceptual and storage) overhead of total
+memoisation.
+   <div class="algorithm">
+
+
+<!--l. 160--><p class="indent" >   <a 
+ id="x1-6001r1"></a><hr class="float"><div class="float" 
+>
+
+ <div class="caption" 
+><span class="id">Algorithm 1: </span><span  
+class="content">Pure PEG adaption of Warth <span 
+class="cmti-10x-x-109">et al.</span>&#8217;s algorithm</span></div><!--tex4ht:label?: x1-6001r1 -->
+<div class="algorithmic">
+        <span class="label-13.14pt">
+ <span 
+class="cmr-9">1:</span> </span>&#xA0;<span 
+class="algorithmic"><span 
+class="cmti-10x-x-109">growing </span><span 
+class="cmsy-10x-x-109">&#x2190; </span><span 
+class="cmmi-10x-x-109">&#x003C;</span><span class="overline"><span 
+class="cmmi-10x-x-109">R</span></span> : <span 
+class="cmmi-10x-x-109">&#x003C; &#x003E;&#x003E;</span>         </span><br class="algorithmic"/><span class="label-13.14pt">  <span 
+class="cmr-9">2:</span> </span>&#xA0;<span  class="algorithmic"><span 
+class="cmbx-10x-x-109">function</span>&#x00A0;<span 
+class="cmcsc-10x-x-109"><span 
+class="small-caps">a</span><span 
+class="small-caps">p</span><span 
+class="small-caps">p</span><span 
+class="small-caps">l</span><span 
+class="small-caps">y</span>-<span 
+class="small-caps">r</span><span 
+class="small-caps">u</span><span 
+class="small-caps">l</span><span 
+class="small-caps">e</span></span>(<span 
+class="cmmi-10x-x-109">R</span>, <span 
+class="cmmi-10x-x-109">P</span>, <span 
+class="cmmi-10x-x-109">R</span><sub><span 
+class="cmmi-8">orig</span></sub>, <span 
+class="cmmi-10x-x-109">P</span><sub><span 
+class="cmmi-8">orig</span></sub>)         </span><br class="algorithmic"/><span class="label-13.14pt">  <span 
+class="cmr-9">3:</span> </span>&#xA0;<span  class="algorithmic">     <span 
+class="cmbx-10x-x-109">if</span>&#x00A0;<span 
+class="cmmi-10x-x-109">R </span>= <span 
+class="cmmi-10x-x-109">R</span><sub><span 
+class="cmmi-8">orig</span></sub> <span 
+class="cmsy-10x-x-109">&#x2227; </span><span 
+class="cmmi-10x-x-109">P </span><span 
+class="cmsy-10x-x-109">&#x2208; </span><span 
+class="cmti-10x-x-109">growing</span>[<span 
+class="cmmi-10x-x-109">R</span>]&#x00A0;<span 
+class="cmbx-10x-x-109">then</span>         </span><br class="algorithmic"/><span class="label-13.14pt">  <span 
+class="cmr-9">4:</span> </span>&#xA0;<span  class="algorithmic">           <span 
+class="cmbx-10x-x-109">return </span><span 
+class="cmti-10x-x-109">growing</span>[<span 
+class="cmmi-10x-x-109">R</span>][<span 
+class="cmmi-10x-x-109">P</span>]         </span><br class="algorithmic"/><span class="label-13.14pt">  <span 
+class="cmr-9">5:</span> </span>&#xA0;<span  class="algorithmic">     <span 
+class="cmbx-10x-x-109">else</span>&#x00A0;<span 
+class="cmbx-10x-x-109">if</span>&#x00A0;<span 
+class="cmmi-10x-x-109">R </span>= <span 
+class="cmmi-10x-x-109">R</span><sub><span 
+class="cmmi-8">orig</span></sub> <span 
+class="cmsy-10x-x-109">&#x2227; </span><span 
+class="cmmi-10x-x-109">P </span>= <span 
+class="cmmi-10x-x-109">P</span><sub><span 
+class="cmmi-8">orig</span></sub>&#x00A0;<span 
+class="cmbx-10x-x-109">then</span>         </span><br class="algorithmic"/><span class="label-13.14pt">  <span 
+class="cmr-9">6:</span> </span>&#xA0;<span  class="algorithmic">           <span 
+class="cmti-10x-x-109">growing</span>[<span 
+class="cmmi-10x-x-109">R</span>][<span 
+class="cmmi-10x-x-109">P</span>] <span 
+class="cmsy-10x-x-109">&#x2190; </span><span 
+class="cmti-10x-x-109">null</span>         </span><br class="algorithmic"/><span class="label-13.14pt">  <span 
+class="cmr-9">7:</span> </span>&#xA0;<span  class="algorithmic">           <span 
+class="cmbx-10x-x-109">while</span>&#x00A0;true&#x00A0;<span 
+class="cmbx-10x-x-109">do</span>         </span><br class="algorithmic"/><span class="label-13.14pt">  <span 
+class="cmr-9">8:</span> </span>&#xA0;<span  class="algorithmic">                <span 
+class="cmti-10x-x-109">result </span><span 
+class="cmsy-10x-x-109">&#x2190; </span><span 
+class="cmcsc-10x-x-109"><span 
+class="small-caps">a</span><span 
+class="small-caps">p</span><span 
+class="small-caps">p</span><span 
+class="small-caps">l</span><span 
+class="small-caps">y</span>-<span 
+class="small-caps">r</span><span 
+class="small-caps">u</span><span 
+class="small-caps">l</span><span 
+class="small-caps">e</span></span>(<span 
+class="cmmi-10x-x-109">R</span>, <span 
+class="cmmi-10x-x-109">P</span>, <span 
+class="cmmi-10x-x-109">R</span><sub><span 
+class="cmmi-8">orig</span></sub>, <span 
+class="cmmi-10x-x-109">P</span><sub><span 
+class="cmmi-8">orig</span></sub>)         </span><br class="algorithmic"/><span class="label-13.14pt">  <span 
+class="cmr-9">9:</span> </span>&#xA0;<span  class="algorithmic">                <span 
+class="cmti-10x-x-109">seed </span><span 
+class="cmsy-10x-x-109">&#x2190; </span><span 
+class="cmti-10x-x-109">growing</span>[<span 
+class="cmmi-10x-x-109">R</span>][<span 
+class="cmmi-10x-x-109">P</span>]         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">10:</span> </span>&#xA0;<span  class="algorithmic">                <span 
+class="cmbx-10x-x-109">if</span>&#x00A0;<span 
+class="cmti-10x-x-109">result </span>= <span 
+class="cmti-10x-x-109">null </span><span 
+class="cmsy-10x-x-109">&#x2228; </span>(<span 
+class="cmti-10x-x-109">seed</span> <span 
+class="cmmi-10x-x-109">&#x2260;</span> null <span 
+class="cmsy-10x-x-109">&#x2227; </span><span 
+class="cmti-10x-x-109">result.pos </span><span 
+class="cmmi-10x-x-109">&#x003C; </span><span 
+class="cmti-10x-x-109">seed.pos</span>)&#x00A0;<span 
+class="cmbx-10x-x-109">then</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">11:</span> </span>&#xA0;<span  class="algorithmic">                     remove <span 
+class="cmmi-10x-x-109">P </span>from <span 
+class="cmti-10x-x-109">growing</span>[<span 
+class="cmmi-10x-x-109">R</span>]         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">12:</span> </span>&#xA0;<span  class="algorithmic">                     <span 
+class="cmbx-10x-x-109">return </span><span 
+class="cmti-10x-x-109">seed</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">13:</span> </span>&#xA0;<span  class="algorithmic">                <span 
+class="cmbx-10x-x-109">end</span>&#x00A0;<span 
+class="cmbx-10x-x-109">if</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">14:</span> </span>&#xA0;<span  class="algorithmic">                <span 
+class="cmti-10x-x-109">growing</span>[<span 
+class="cmmi-10x-x-109">R</span>][<span 
+class="cmmi-10x-x-109">P</span>] <span 
+class="cmsy-10x-x-109">&#x2190; </span><span 
+class="cmti-10x-x-109">result</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">15:</span> </span>&#xA0;<span  class="algorithmic">           <span 
+class="cmbx-10x-x-109">end</span>&#x00A0;<span 
+class="cmbx-10x-x-109">while</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">16:</span> </span>&#xA0;<span  class="algorithmic">     <span 
+class="cmbx-10x-x-109">else</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">17:</span> </span>&#xA0;<span  class="algorithmic">           traditional PEG rule application         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">18:</span> </span>&#xA0;<span  class="algorithmic">     <span 
+class="cmbx-10x-x-109">end</span>&#x00A0;<span 
+class="cmbx-10x-x-109">if</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">19:</span> </span>&#xA0;<span  class="algorithmic"><span 
+class="cmbx-10x-x-109">end</span>&#x00A0;<span 
+class="cmbx-10x-x-109">function</span></span>
+</div>
+
+   </div><hr class="endfloat" />
+   </div>
+<!--l. 187--><p class="indent" >   Algorithm <a 
+href="#x1-6001r1">1<!--tex4ht:ref: direct left recursion apply --></a> is written in the style of Warth <span 
+class="cmti-10x-x-109">et al.</span>&#8217;s direct left-recursion
+Packrat algorithm and shows my adaption of their algorithm for &#8216;pure&#8217; PEGs.
+While Warth <span 
+class="cmti-10x-x-109">et al.</span>&#8217;s algorithm is presented as an <span 
+class="cmcsc-10x-x-80">APPLY-RULE </span>function which
+evaluates a rule <span 
+class="cmmi-10x-x-109">R </span>at position <span 
+class="cmmi-10x-x-109">P</span>, the pure PEG <span 
+class="cmcsc-10x-x-80">APPLY-RULE </span>takes two extra
+arguments <span 
+class="cmmi-10x-x-109">R</span><sub><span 
+class="cmmi-8">orig</span></sub> and <span 
+class="cmmi-10x-x-109">P</span><sub><span 
+class="cmmi-8">orig</span></sub>; these are used so that the &#8216;calling&#8217; rule can transmit
+to <span 
+class="cmcsc-10x-x-80">APPLY-RULE </span>its identity (<span 
+class="cmmi-10x-x-109">R</span><sub><span 
+class="cmmi-8">orig</span></sub>) and the input position in effect when <span 
+class="cmmi-10x-x-109">R</span><sub><span 
+class="cmmi-8">orig</span></sub> was
+called (<span 
+class="cmmi-10x-x-109">P</span><sub><span 
+class="cmmi-8">orig</span></sub> where <span 
+class="cmmi-10x-x-109">P</span><sub><span 
+class="cmmi-8">orig</span></sub> <span 
+class="cmsy-10x-x-109">&#x2264; </span><span 
+class="cmmi-10x-x-109">P</span>). <span 
+class="cmcsc-10x-x-80">APPLY-RULE </span>returns a result object on a
+successful parse; unsuccessful parses return <span 
+class="cmti-10x-x-109">null</span>. The precise details of a result
+are left largely abstract; I assume only that it has a <span 
+class="cmti-10x-x-109">pos </span>attribute which details
+its finishing input position. Using this algorithm, we can now use the
+left-recursive PEG from Section <a 
+href="#x1-30003">3<!--tex4ht:ref: traditional left-recursion removal --></a> to parse the input <span 
+class="cmtt-10x-x-109">1-2-3</span>, receiving a parse tree
+equivalent to the input <span 
+class="cmtt-10x-x-109">(((1)-2)-3)</span>. Happily, Algorithm <a 
+href="#x1-6001r1">1<!--tex4ht:ref: direct left recursion apply --></a> not only
+terminates (left-recursion does not cause infinite loops), but, for this
+example, correctly retains the expected left-associativity of the original
+PEG (a standard tree walker over this parse tree will return the answer
+-4).
+<!--l. 189--><p class="indent" >   While Algorithm <a 
+href="#x1-6001r1">1<!--tex4ht:ref: direct left recursion apply --></a> can initially appear rather confusing, in reality it is
+relatively simple. First of all, we can assume that all aspects of PEG parsing
+other than rule calling are exactly as they would be in &#8216;normal&#8217; PEG evaluation.
+Where Warth <span 
+class="cmti-10x-x-109">et al.</span>&#8217;s proposal uses memoisation to detect that left-recursion is
+occurring, Algorithm <a 
+href="#x1-6001r1">1<!--tex4ht:ref: direct left recursion apply --></a> instead uses a map:
+    <dl class="basedescript"><dt class="basedescript">
+&#x00A0;    <span 
+class="cmti-10x-x-109">growing</span> is a map <span 
+class="cmmi-10x-x-109">&#x003C;R </span><span 
+class="cmsy-10x-x-109">&#x2192; </span><span 
+class="cmmi-10x-x-109">&#x003C;P </span><span 
+class="cmsy-10x-x-109">&#x2192; </span><span 
+class="cmmi-10x-x-109">seed &#x003E;&#x003E; </span>from rules to maps of input
+    positions to seeds at that input position. This is used to record the
+    ongoing growth of a seed for a rule <span 
+class="cmmi-10x-x-109">R </span>at input position <span 
+class="cmmi-10x-x-109">P</span>.</dd></dl><br>
+<!--l. 198--><p class="noindent" ><span 
+class="cmti-10x-x-109">growing </span>is the data structure at the heart of the algorithm. A programming
+language-like type for it would be <span 
+class="cmtt-10x-x-109">Map&#x003C;Rule,Map&#x003C;Int,Result&#x003E;&#x003E;</span>. Since we
+statically know all the rules for a PEG, <span 
+class="cmti-10x-x-109">growing </span>is statically initialised
+with an empty map for each rule at the beginning of the algorithm (line
+1).
+<!--l. 200--><p class="indent" >   Algorithm <a 
+href="#x1-6001r1">1<!--tex4ht:ref: direct left recursion apply --></a>&#8217;s simplest case is when <span 
+class="cmmi-10x-x-109">R</span><sub><span 
+class="cmmi-8">orig</span></sub> is not left-recursively calling itself,
+in which case rule calling happens as normal (line 17). However, if the call of <span 
+class="cmmi-10x-x-109">R </span>is
+left-recursive then there are two cases. It is most natural to consider the second
+case first, which is when left-recursion has not yet occurred but is about to begin.
+This is triggered when no input has been consumed, detected when <span 
+class="cmmi-10x-x-109">P </span>has
+not advanced over <span 
+class="cmmi-10x-x-109">P</span><sub><span 
+class="cmmi-8">orig</span></sub> (line 5). We first set the seed in the <span 
+class="cmti-10x-x-109">growing</span>
+map at input position <span 
+class="cmmi-10x-x-109">P </span>for rule <span 
+class="cmmi-10x-x-109">R </span>to <span 
+class="cmti-10x-x-109">null </span>(line 6), meaning that if /
+when left-recursion happens for this rule at this input position, the initial
+left-recursion will fail. For a rule like <span 
+class="cmtt-10x-x-109">expr &#x003C;- expr "-" num / num</span>, this
+means that, on the first recursive call, the first part of the ordered choice
+
+will fail (due to line 4), forcing the ordered choice to then try its second
+part.
+<!--l. 202--><p class="indent" >   The while loop starting at line 7 is where the algorithm changes from
+a standard recursive top-down PEG parser to a Warth <span 
+class="cmti-10x-x-109">et al. </span>iterative
+bottom-up parser. In essence, we continually re-evaluate the rule <span 
+class="cmmi-10x-x-109">R </span>at input
+position <span 
+class="cmmi-10x-x-109">P </span>(note that <span 
+class="cmmi-10x-x-109">P </span>does not advance); each time this re-evaluation is
+successful, we update the seed in <span 
+class="cmti-10x-x-109">growing</span>[<span 
+class="cmmi-10x-x-109">R</span>][<span 
+class="cmmi-10x-x-109">P</span>] (line 14). As expected,
+this means that each update of the seed includes within it the previous
+seed.
+<!--l. 204--><p class="indent" >   Re-evaluation of <span 
+class="cmmi-10x-x-109">R </span>at input position <span 
+class="cmmi-10x-x-109">P </span>can be unsuccessful for two reasons: if
+the re-evaluation fails completely; or if the result returned by re-evaluation
+consumes less of the input than the current seed (if one exists). The former case
+is trivial (though note that, by definition, it can only trigger on the first
+attempt at left-recursion). The latter is less obvious, and is not explained in
+depth by Warth <span 
+class="cmti-10x-x-109">et al. </span>Intuitively, if a left-recursive call returns a &#8216;shorter&#8217;
+result than the previous known one, then by definition it has not used the
+current seed; in other words, the left-recursion must have exhausted itself.
+When re-evaluation is unsuccessful, the seed is returned (line 12). Note
+that the seed will be <span 
+class="cmti-10x-x-109">null </span>if the left-recursive call failed to match any
+input.
+<!--l. 206--><p class="indent" >   The final unexplained part of Algorithm <a 
+href="#x1-6001r1">1<!--tex4ht:ref: direct left recursion apply --></a> is when left-recursion is occurring
+and <span 
+class="cmmi-10x-x-109">R </span>calls itself. In this case, the seed is immediately returned (line 4). Note
+again that this will be set to <span 
+class="cmti-10x-x-109">null </span>(due to line 6) on the first left-recursive call;
+thus line 4 is the key point in preventing an infinite loop in the presence of
+left-recursion.
+   <h4 class="subsectionHead"><span class="titlemark">4.3   </span> <a 
+ id="x1-70004.3"></a>Practical considerations</h4>
+<!--l. 258--><p class="noindent" >Algorithm <a 
+href="#x1-6001r1">1<!--tex4ht:ref: direct left recursion apply --></a> is tailored for simplicity of presentation and analysis, not for
+performance. In particular, it imposes unnecessary checks for all rules. A
+practical implementation can trivially reduce this cost by statically determining
+which rules are potentially directly left-recursive, and only calling the
+<span 
+class="cmcsc-10x-x-80">APPLY-RULE </span>in Algorithm <a 
+href="#x1-6001r1">1<!--tex4ht:ref: direct left recursion apply --></a> for those rules; normal rules can call a &#8216;traditional&#8217;
+PEG function which does not impose such costs. Thus, non-left-recursive calls
+can trivially be relieved of any extra processing over-head related to left-recursion
+handling. Furthermore, many approaches will (for efficiency reasons) fold
+<span 
+class="cmcsc-10x-x-80">APPLY-RULE </span>into a larger function. In such cases, the third and fourth
+arguments &#8211; <span 
+class="cmmi-10x-x-109">P</span><sub><span 
+class="cmmi-8">orig</span></sub> and <span 
+class="cmmi-10x-x-109">R</span><sub><span 
+class="cmmi-8">orig</span></sub> &#8211; are also trivially removed. The example
+implementation that accompanies this paper (see Section <a 
+href="#x1-140007">7<!--tex4ht:ref: accompanying implementation --></a>) demonstrates both
+aspects.
+<!--l. 262--><p class="noindent" >
+
+   <h3 class="sectionHead"><span class="titlemark">5   </span> <a 
+ id="x1-80005"></a>Incorrect parses with Algorithm 1</h3>
+<!--l. 265--><p class="noindent" >Unfortunately Algorithm <a 
+href="#x1-6001r1">1<!--tex4ht:ref: direct left recursion apply --></a> has a major, if subtle, flaw. Consider the following
+minor change to Warth <span 
+class="cmti-10x-x-109">et al.</span>&#8217;s example from Section <a 
+href="#x1-30003">3<!--tex4ht:ref: warths example --></a>, where the right hand
+side of the first ordered choice in <span 
+class="cmtt-10x-x-109">expr </span>has been changed from <span 
+class="cmtt-10x-x-109">num </span>to
+<span 
+class="cmti-10x-x-109">expr</span>:
+   <div class="fancyvrb" id="fancyvrb5">
+<a 
+ id="x1-8002r1"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;"-"</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;num</span>
+<br class="fancyvrb" /><a 
+ id="x1-8004r2"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;num</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;[0-9]+</span>
+   </div>
+<!--l. 270--><p class="noindent" >When we use this PEG and Algorithm <a 
+href="#x1-6001r1">1<!--tex4ht:ref: direct left recursion apply --></a> to parse the input <span 
+class="cmtt-10x-x-109">1-2-3 </span>we get a
+parse tree tree equivalent to the input <span 
+class="cmtt-10x-x-109">(1-(2-(3)))</span>. As with traditional
+left-recursion removal, we have obtained a right-associative parse. It may not
+be immediately obvious that this is an incorrect result: after all, if the
+above PEG were a CFG, this would be an entirely valid parse. However
+this parse violates a fundamental aspect of PEGs, which is that rules
+match text greedily in order to ensure unambiguous parses <span class="cite">[<a 
+href="#Xford__parsing_expression_grammars_a_recognition_based_syntactic_foundation">3</a>]</span>. In the
+above right-associative parse, one can clearly see that the right-recursive
+call of <span 
+class="cmtt-10x-x-109">expr </span>has matched more text (<span 
+class="cmtt-10x-x-109">2-3) </span>than the left-recursive call
+(<span 
+class="cmtt-10x-x-109">1</span>).
+<!--l. 272--><p class="indent" >   An important question is whether this error is a result of the move from
+Packrat parsing to pure PEGs in Algorithm <a 
+href="#x1-6001r1">1<!--tex4ht:ref: direct left recursion apply --></a>. However exactly the same issue
+can be seen in faithful implementations of Warth <span 
+class="cmti-10x-x-109">et al.</span>&#8217;s algorithm. Given the
+following PEG, Warth&#8217;s OMeta tool <span class="cite">[<a 
+href="#Xwarth_piumarta__ometa_an_object_oriented_language_for_pattern_matching">11</a>]</span> produces exactly the same incorrect
+parse for <span 
+class="cmtt-10x-x-109">1-2-3</span>:
+   <div class="fancyvrb" id="fancyvrb6">
+<a 
+ id="x1-8006r1"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;ometa</span><span 
+class="cmtt-9">&#x00A0;AT</span><span 
+class="cmtt-9">&#x00A0;&#x003C;:</span><span 
+class="cmtt-9">&#x00A0;Parser</span><span 
+class="cmtt-9">&#x00A0;{</span>
+<br class="fancyvrb" /><a 
+ id="x1-8008r2"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;Expr</span><span 
+class="cmtt-9">&#x00A0;=</span><span 
+class="cmtt-9">&#x00A0;Expr:l</span><span 
+class="cmtt-9">&#x00A0;"-"</span><span 
+class="cmtt-9">&#x00A0;Expr:r</span><span 
+class="cmtt-9">&#x00A0;-&#x003E;</span><span 
+class="cmtt-9">&#x00A0;(l</span><span 
+class="cmtt-9">&#x00A0;-</span><span 
+class="cmtt-9">&#x00A0;r)</span>
+<br class="fancyvrb" /><a 
+ id="x1-8010r3"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;|</span><span 
+class="cmtt-9">&#x00A0;Num:i</span><span 
+class="cmtt-9">&#x00A0;-&#x003E;</span><span 
+class="cmtt-9">&#x00A0;(i),</span>
+<br class="fancyvrb" /><a 
+ id="x1-8012r4"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;Num</span><span 
+class="cmtt-9">&#x00A0;=</span><span 
+class="cmtt-9">&#x00A0;digit+:ds</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;-&#x003E;</span><span 
+class="cmtt-9">&#x00A0;ds.join(&#8217;&#8217;)</span>
+<br class="fancyvrb" /><a 
+ id="x1-8014r5"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;}</span>
+   </div>
+<!--l. 280--><p class="noindent" >A corollary of greedy matching is that, for a given input position <span 
+class="cmmi-10x-x-109">P</span>, later expressions
+in an ordered choice cannot affect the text matched by earlier expressions (i.e. in
+<span 
+class="cmtt-10x-x-109">e</span><sub><span 
+class="cmr-8">0</span></sub><span 
+class="cmtt-10x-x-109">/e</span><sub><span 
+class="cmr-8">1</span></sub>, <span 
+class="cmtt-10x-x-109">e</span><sub><span 
+class="cmr-8">1</span></sub> cannot effect <span 
+class="cmtt-10x-x-109">e</span><sub><span 
+class="cmr-8">0</span></sub>). Algorithm <a 
+href="#x1-6001r1">1<!--tex4ht:ref: direct left recursion apply --></a> also violates this corollary. Consider the
+PEG:
+   <div class="fancyvrb" id="fancyvrb7">
+<a 
+ id="x1-8016r1"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;"-"</span><span 
+class="cmtt-9">&#x00A0;num</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;"+"</span><span 
+class="cmtt-9">&#x00A0;num</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;num</span>
+<br class="fancyvrb" /><a 
+ id="x1-8018r2"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;num</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;[0-9]+</span>
+   </div>
+<!--l. 285--><p class="noindent" >When used to parse <span 
+class="cmtt-10x-x-109">1+2-3 </span>the resulting parse tree is equivalent to the input
+<span 
+class="cmtt-10x-x-109">(((1)+2)-3)</span>. If we now make the second part of the ordered choice in <span 
+class="cmtt-10x-x-109">expr</span>
+right-recursive:
+
+   <div class="fancyvrb" id="fancyvrb8">
+<a 
+ id="x1-8020r1"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;"-"</span><span 
+class="cmtt-9">&#x00A0;num</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;"+"</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;num</span>
+<br class="fancyvrb" /><a 
+ id="x1-8022r2"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;num</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;[0-9]+</span>
+   </div>
+<!--l. 290--><p class="noindent" >then the parse of <span 
+class="cmtt-10x-x-109">1+2-3 </span>creates a parse tree equivalent to the input <span 
+class="cmtt-10x-x-109">(1+(2-(3)))</span>. In
+other words, the change to the second expression of the ordered choice has
+effected the first expression.
+<!--l. 292--><p class="indent" >   As these examples show, by unintentionally altering the rules on greedy
+matching, Algorithm <a 
+href="#x1-6001r1">1<!--tex4ht:ref: direct left recursion apply --></a> introduces ambiguity into PEG parsing, thus losing many
+of the formal guarantees of traditional PEGs. To the best of my knowledge, this
+is the first time that this problem with Warth <span 
+class="cmti-10x-x-109">et al.</span>&#8217;s algorithm has been
+shown.
+<!--l. 296--><p class="noindent" >
+   <h3 class="sectionHead"><span class="titlemark">6   </span> <a 
+ id="x1-90006"></a>Identifying and mitigating the problem</h3>
+<!--l. 298--><p class="noindent" >Let us first consider the simplest solution to the problem in Section <a 
+href="#x1-80005">5<!--tex4ht:ref: the warth problem --></a>: disallowing
+all (direct or indirect) recursive calls in a left-recursive rule other than an initial
+left-recursive call. For example, <span 
+class="cmtt-10x-x-109">R &#x003C;- R X </span>is allowed, but <span 
+class="cmtt-10x-x-109">R &#x003C;- R X R </span>and <span 
+class="cmtt-10x-x-109">R &#x003C;-</span>
+<span 
+class="cmtt-10x-x-109">R X R Y </span>are disallowed (assuming that <span 
+class="cmtt-10x-x-109">X </span>and <span 
+class="cmtt-10x-x-109">Y </span>are input consuming
+substitutions). Restricting the set of parseable PEGs to this is trivial &#8211; and easily
+done dynamically; static enforcement would require some cunning as we shall
+soon see &#8211; and will clearly solve the problem. However, while it does increase the
+set of parseable PEGs relative to the traditional approach, it is still rather
+restrictive.
+<!--l. 300--><p class="indent" >   In this section, I first show that right-recursion in left-recursive rules is the
+fundamental problem, allowing a wider class of PEGs to be parsed; by forbidding
+these, Algorithm <a 
+href="#x1-6001r1">1<!--tex4ht:ref: direct left recursion apply --></a> can be safely used (Section <a 
+href="#x1-100006.1">6.1<!--tex4ht:ref: fixing warth et al --></a>). I then show that all definitely
+direct left-recursive rules without potential right-recursion can be safely parsed
+too (Section <a 
+href="#x1-120006.3">6.3<!--tex4ht:ref: parse nearly all left-recursive right-recursive rules --></a>).
+<!--l. 303--><p class="noindent" >
+   <h4 class="subsectionHead"><span class="titlemark">6.1   </span> <a 
+ id="x1-100006.1"></a>Pinpointing right-recursion in left-recursive rules</h4>
+<!--l. 306--><p class="noindent" >An intuitive analysis of the examples in Section <a 
+href="#x1-80005">5<!--tex4ht:ref: the warth problem --></a> and Algorithm <a 
+href="#x1-6001r1">1<!--tex4ht:ref: direct left recursion apply --></a> highlights the
+underlying problem. While Algorithm <a 
+href="#x1-6001r1">1<!--tex4ht:ref: direct left recursion apply --></a> contains both a top-down and bottom-up
+parser, the two are not on an equal footing&#8212;the top-down parser gets
+the first opportunity to run to completion. When the bottom-up parser
+calls <span 
+class="cmcsc-10x-x-80">APPLY-RULE </span>on line 8 of Algorithm <a 
+href="#x1-6001r1">1<!--tex4ht:ref: direct left recursion apply --></a>, it allows the top-down parser
+opportunity to match the maximum possible text without giving the
+bottom-up parser an opportunity to wrest back control. Thus in any battle
+between left and right-recursion in a single rule, right-recursion (using the
+top-down parser) always wins over left-recursion (using the bottom-up
+
+parser).
+<!--l. 308--><p class="indent" >   That rules that are both left and right-recursive is the underlying issue can be
+seen with a minor modification to the running example, placing an arbitrary
+input consuming &#8216;end marker&#8217; after the right-recursive call to <span 
+class="cmtt-10x-x-109">expr </span>(thus making
+it merely recursive, not right-recursive):
+   <div class="fancyvrb" id="fancyvrb9">
+<a 
+ id="x1-10002r1"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;"-"</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;"m"</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;num</span>
+<br class="fancyvrb" /><a 
+ id="x1-10004r2"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;num</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;[0-9]+</span>
+   </div>
+<!--l. 313--><p class="noindent" >If we now parse <span 
+class="cmtt-10x-x-109">1-2m-3m </span>(i.e. our running example text with end markers inserted),
+we get a parse tree equivalent to the input <span 
+class="cmtt-10x-x-109">(((1)-2)-3)</span>&#8212;the end markers have
+prevented right-recursion matching an arbitrary amount of text, thus
+allowing left-recursion to work as expected, giving us a left-associative
+parse.
+<!--l. 315--><p class="indent" >   It thus seems that we can now state a fairly liberal, but still easily
+implementable, solution which prevents the problem noted in Section <a 
+href="#x1-80005">5<!--tex4ht:ref: the warth problem --></a> from
+arising: PEGs which contain rules which are both left and right recursive are not
+permitted. However there is one further subtlety which we must consider, which
+is best highlighted by the following modification to the running example, making
+end markers optional:
+   <div class="fancyvrb" id="fancyvrb10">
+<a 
+ id="x1-10006r1"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;"-"</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;"m"?</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;num</span>
+<br class="fancyvrb" /><a 
+ id="x1-10008r2"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;num</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;[0-9]+</span>
+   </div>
+<!--l. 320--><p class="noindent" >If we parse the text <span 
+class="cmtt-10x-x-109">1-2-3 </span>against this PEG, we will once again receive an incorrect
+right-associative parse. Until now I have implicitly assumed that right-recursive
+rules are those which &#8216;look obviously&#8217; right-recursive. In fact, some rule calls are
+right-recursive, or merely recursive, depending on the input string and whether
+they are followed by other expressions which can match against the empty string;
+the same idea is also true for left-recursion. We can use the standard <span 
+class="cmti-10x-x-109">nullables</span>
+computation from parsing theory <span class="cite">[<a 
+href="#Xgrune_jacobs__parsing_techniques">5</a>]</span>, which is trivially transferable to
+PEGs, to statically calculate potentially left or <span 
+class="cmti-10x-x-109">potentially </span>right-recursive
+calls<span class="footnote-mark"><a 
+href="direct_left_recursive_pegs2.html#fn1x0"><sup class="textsuperscript">1</sup></a></span><a 
+ id="x1-10009f1"></a>.
+<!--l. 322--><p class="indent" >   Therefore a precise, fairly liberal, solution to the problem noted in
+Section <a 
+href="#x1-80005">5<!--tex4ht:ref: the warth problem --></a> is to statically forbid any potentially left-recursive rule which
+contains potentially right-recursive calls. Non-left-recursive rules can
+still safely include potentially (direct or indirect) right-recursive calls.
+
+   <h4 class="subsectionHead"><span class="titlemark">6.2   </span> <a 
+ id="x1-110006.2"></a>The case for right-recursion in left-recursive rules</h4>
+<!--l. 327--><p class="noindent" >In Section <a 
+href="#x1-100006.1">6.1<!--tex4ht:ref: disallow potentially right-recursive rules --></a> I showed that forbidding potentially right-recursive calls in
+potentially left-recursive rules solved the problem of Section <a 
+href="#x1-80005">5<!--tex4ht:ref: the warth problem --></a>. For many uses,
+this may well allow a sufficiently large class of PEGs to be parsed. There
+are, however, two reasons why we might wish to remove this restriction.
+First, this sort of (seemingly arbitrary) restriction is arguably one of
+the reasons why parsing is considered a black art by many otherwise
+capable people; the classically liberally minded have every right to ask
+whether we can allow some form of right-recursion in left-recursive rules.
+Second, grammars with both left and right recursion are the most natural
+way to write and evolve many grammars; their absence can complicate
+development.
+<!--l. 329--><p class="indent" >   For example, a standard expression grammar encoding correct precedences for
+<span 
+class="cmtt-10x-x-109">+</span>, <span 
+class="cmtt-10x-x-109">-</span>, <span 
+class="cmtt-10x-x-109">*</span>, and <span 
+class="cmtt-10x-x-109">- </span>looks as follows in traditional PEGs:
+   <div class="fancyvrb" id="fancyvrb11">
+<a 
+ id="x1-11002r1"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;S</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;!</span><span 
+class="cmtt-9">&#x00A0;.</span>
+<br class="fancyvrb" /><a 
+ id="x1-11004r2"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;"+"</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;"-"</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Fact</span>
+<br class="fancyvrb" /><a 
+ id="x1-11006r3"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;Int</span><span 
+class="cmtt-9">&#x00A0;"*"</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Int</span><span 
+class="cmtt-9">&#x00A0;"/"</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Int</span>
+<br class="fancyvrb" /><a 
+ id="x1-11008r4"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;Int</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;[0-9]+</span>
+   </div>
+<!--l. 336--><p class="noindent" >Using Warth <span 
+class="cmti-10x-x-109">et al.</span>&#8217;s algorithm we can rewrite this to be left-recursive as
+follows:
+   <div class="fancyvrb" id="fancyvrb12">
+<a 
+ id="x1-11010r1"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;S</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;!</span><span 
+class="cmtt-9">&#x00A0;.</span>
+<br class="fancyvrb" /><a 
+ id="x1-11012r2"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;"+"</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;"-"</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Fact</span>
+<br class="fancyvrb" /><a 
+ id="x1-11014r3"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;"*"</span><span 
+class="cmtt-9">&#x00A0;Int</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;"/"</span><span 
+class="cmtt-9">&#x00A0;Int</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Int</span>
+<br class="fancyvrb" /><a 
+ id="x1-11016r4"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;Int</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;[0-9]+</span>
+   </div>
+<!--l. 343--><p class="noindent" >Although this rewriting has simply swapped the left and right-recursion, many
+people find the left-recursive version more natural. However, in both of the above
+grammars, we are forced to be careful about making sure the recursion
+terminates consistently: in both the <span 
+class="cmtt-10x-x-109">Term </span>and <span 
+class="cmtt-10x-x-109">Fact </span>rules, note that the
+non-recursive alternative at the end of the rules (<span 
+class="cmtt-10x-x-109">Fact </span>and <span 
+class="cmtt-10x-x-109">Int </span>respectively) has
+to be encoded in each of the preceding alternatives too. This means that some
+seemingly local alterations to the grammar in fact require much larger chunks to
+be altered. For example, if we wish to allow bracketed expressions in the
+above grammar, we not only have to add a new rule, but change three
+references to it, as shown in the following (where changes are highlighted in
+italics):
+   <div class="fancyvrb" id="fancyvrb13">
+<a 
+ id="x1-11018r1"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;S</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;!</span><span 
+class="cmtt-9">&#x00A0;.</span>
+<br class="fancyvrb" /><a 
+ id="x1-11020r2"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;"+"</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;"-"</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Fact</span>
+<br class="fancyvrb" /><a 
+ id="x1-11022r3"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;"*"</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmitt-10x-x-90">Prim</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;"/"</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmitt-10x-x-90">Prim</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmitt-10x-x-90">Prim</span>
+
+<br class="fancyvrb" /><a 
+ id="x1-11024r4"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmitt-10x-x-90">Prim</span><span 
+class="cmitt-10x-x-90">&#x00A0;&#x003C;-</span><span 
+class="cmitt-10x-x-90">&#x00A0;"("</span><span 
+class="cmitt-10x-x-90">&#x00A0;Term</span><span 
+class="cmitt-10x-x-90">&#x00A0;")"</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Int</span>
+<br class="fancyvrb" /><a 
+ id="x1-11026r5"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;Int</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;[0-9]+</span>
+   </div>
+<!--l. 351--><p class="noindent" >Consider if, instead, we had been able to write the original expression grammar using
+both left and right-recursion:
+   <div class="fancyvrb" id="fancyvrb14">
+<a 
+ id="x1-11028r1"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;S</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;!</span><span 
+class="cmtt-9">&#x00A0;.</span>
+<br class="fancyvrb" /><a 
+ id="x1-11030r2"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;"+"</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;"-"</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Fact</span>
+<br class="fancyvrb" /><a 
+ id="x1-11032r3"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;"*"</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;"/"</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Int</span>
+<br class="fancyvrb" /><a 
+ id="x1-11034r4"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;Int</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;[0-9]+</span>
+   </div>
+<!--l. 358--><p class="noindent" >Adding bracketed expressions to this grammar would then require changing only a
+single reference:
+   <div class="fancyvrb" id="fancyvrb15">
+<a 
+ id="x1-11036r1"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;S</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;!</span><span 
+class="cmtt-9">&#x00A0;.</span>
+<br class="fancyvrb" /><a 
+ id="x1-11038r2"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;"+"</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;"-"</span><span 
+class="cmtt-9">&#x00A0;Term</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Fact</span>
+<br class="fancyvrb" /><a 
+ id="x1-11040r3"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;"*"</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;"/"</span><span 
+class="cmtt-9">&#x00A0;Fact</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmitt-10x-x-90">Prim</span>
+<br class="fancyvrb" /><a 
+ id="x1-11042r4"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmitt-10x-x-90">Prim</span><span 
+class="cmitt-10x-x-90">&#x00A0;&#x003C;-</span><span 
+class="cmitt-10x-x-90">&#x00A0;"("</span><span 
+class="cmitt-10x-x-90">&#x00A0;Term</span><span 
+class="cmitt-10x-x-90">&#x00A0;")"</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;Int</span>
+<br class="fancyvrb" /><a 
+ id="x1-11044r5"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;Int</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;[0-9]+</span>
+   </div>
+<!--l. 366--><p class="noindent" >Though there are other arguments one could advance for justifying why
+right-recursion in left-recursive rules is useful, I hope that the above example of
+increased ease of grammar evolution provides sufficient motivation.
+<!--l. 369--><p class="noindent" >
+   <h4 class="subsectionHead"><span class="titlemark">6.3   </span> <a 
+ id="x1-120006.3"></a>Allowing direct definite right-recursion in left-recursive rules</h4>
+<!--l. 372--><p class="noindent" >In order to begin tackling the problem of allowing right-recursion in left-recursive
+rules, we first have to solve a challenge: can we ensure that the top-down parser
+gets sufficient opportunity to run when right-recursion is present in left-recursive
+rules? A simple observation is key: when we are in left-recursion and then
+encounter right-recursion, the bottom-up parser allows the right-recursion to
+continue many recursive levels deep, gobbling up text. Instead, we want the
+right-recursion to go only one recursive level deep, and then to return control to
+the bottom-up parser.
+<!--l. 374--><p class="indent" >   The solution, at a high level, therefore seems reasonably straight forward.
+When we are in left-recursion on a rule <span 
+class="cmmi-10x-x-109">R </span>and then right-recursively call <span 
+class="cmmi-10x-x-109">R</span>, we
+need to make all further right recursive calls to <span 
+class="cmmi-10x-x-109">R </span>fail, until the top-level
+right-recursion has returned control to the bottom-up parser. Intuitively, for a
+rule such as <span 
+class="cmtt-10x-x-109">expr &#x003C;- expr "+" expr / num</span>, the right-recursive call of <span 
+class="cmtt-10x-x-109">expr</span>
+would then match only <span 
+class="cmtt-10x-x-109">num</span>, since the first part of the ordered choice would
+fail.
+
+<!--l. 376--><p class="indent" >   At a low level, we are forced to consider the issue of potential right-recursion.
+The high-level solution implicitly relies on statically identifying right-recursive
+calls; however when executed, potential right-recursion, by definition, may
+sometimes be simply normally-recursive or definitely right-recursive. To make
+matters worse, we can not dynamically determine whether a potentially
+right-recursive call is definitely right-recursive or not until its containing rule is
+completely evaluated. With PEGs this is not very useful since &#8211; unlike traditional
+CFGs, where one can backtrack arbitrarily &#8211; PEGs commit themselves to certain
+parses which backtracking can not undo. The issue can be seen in this extension
+of <span 
+class="cmtt-10x-x-109">expr</span>:
+   <div class="fancyvrb" id="fancyvrb16">
+<a 
+ id="x1-12002r1"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;"-"</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;("-"</span><span 
+class="cmtt-9">&#x00A0;expr)?</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;num</span>
+<br class="fancyvrb" /><a 
+ id="x1-12004r2"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;num</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;["0-9"]+</span>
+   </div>
+<!--l. 381--><p class="noindent" >Given this PEG, we would hope that <span 
+class="cmtt-10x-x-109">1-2-3 </span>would parse as <span 
+class="cmtt-10x-x-109">(((1)-2)-3)</span>. In order
+for this to be the case, we would first need to evaluate the sub-expression <span 
+class="cmtt-10x-x-109">("-"</span>
+<span 
+class="cmtt-10x-x-109">expr)? </span>to determine whether it matched any of the input; depending on whether
+it did, or did not, we would then know whether to treat the middle call of <span 
+class="cmtt-10x-x-109">expr</span>
+as normal recursion (not needing special treatment) or right recursion (and
+requiring the special rule mentioned in the high-level solution). Since we can not
+evaluate <span 
+class="cmtt-10x-x-109">("-" expr)? </span>before evaluating the middle call of <span 
+class="cmtt-10x-x-109">expr</span>, this means that
+the high-level solution outlined above would mean the above PEG is
+ambiguous, since the potential right-recursion could lead to two different
+parses.
+<!--l. 383--><p class="indent" >   The problem with the high-level solution and potential right-recursion seems
+inherent. The only way to avoid it is to ban potential right-recursion in
+left-recursive rules. For the avoidance of doubt, we can state the following two
+rules: non-left recursive rules are allowed to have potential right-recursion;
+but left-recursive rules must either have no right-recursion or definite
+right-recursion.
+<!--l. 385--><p class="indent" >   There is one last issue to consider: potential left-recursion. As with
+right-recursion, one can create rules such as <span 
+class="cmtt-10x-x-109">e &#x003C;- e? "x" e </span>where left-recursion
+occurs, or not, solely depending on the input. One could therefore wait until
+run-time to discover whether a rule is called left-recursively, and, if the rule was
+also statically determined to be potentially right-recursive, complain. The
+algorithm in the following section supports this dynamic approach. The
+accompanying implementation, on the other hand, recognises that this is unlikely
+to be the desired behaviour, and statically rejects potentially right-recursive calls
+in potentially left-recursive rules.
+<!--l. 388--><p class="noindent" >
+   <h4 class="subsectionHead"><span class="titlemark">6.4   </span> <a 
+ id="x1-130006.4"></a>An algorithm for definite right-recursion in left-recursive rules</h4>
+
+   <div class="algorithm">
+
+<!--l. 390--><p class="indent" >   <a 
+ id="x1-13001r2"></a><hr class="float"><div class="float" 
+>
+
+ <div class="caption" 
+><span class="id">Algorithm 2: </span><span  
+class="content">An update of Algorithm <a 
+href="#x1-6001r1">1<!--tex4ht:ref: direct left recursion apply --></a> which correctly deals with direct
+right-recursion in left-recursive rules</span></div><!--tex4ht:label?: x1-13001r2 -->
+<div class="algorithmic">
+        <span class="label-13.14pt">
+ <span 
+class="cmr-9">1:</span> </span>&#xA0;<span 
+class="algorithmic"><span 
+class="cmti-10x-x-109">growing </span><span 
+class="cmsy-10x-x-109">&#x2190; </span><span 
+class="cmmi-10x-x-109">&#x003C;</span><span class="overline"><span 
+class="cmmi-10x-x-109">R</span></span> : <span 
+class="cmmi-10x-x-109">&#x003C; &#x003E;&#x003E;</span>         </span><br class="algorithmic"/><span class="label-13.14pt">  <span 
+class="cmr-9">2:</span> </span>&#xA0;<span  class="algorithmic"><span 
+class="cmti-10x-x-109">limit </span><span 
+class="cmsy-10x-x-109">&#x2190;{}</span>         </span><br class="algorithmic"/><span class="label-13.14pt">  <span 
+class="cmr-9">3:</span> </span>&#xA0;<span  class="algorithmic"><span 
+class="cmbx-10x-x-109">function</span>&#x00A0;<span 
+class="cmcsc-10x-x-109"><span 
+class="small-caps">a</span><span 
+class="small-caps">p</span><span 
+class="small-caps">p</span><span 
+class="small-caps">l</span><span 
+class="small-caps">y</span>-<span 
+class="small-caps">r</span><span 
+class="small-caps">u</span><span 
+class="small-caps">l</span><span 
+class="small-caps">e</span></span>(<span 
+class="cmmi-10x-x-109">R</span>, <span 
+class="cmmi-10x-x-109">P</span>, <span 
+class="cmmi-10x-x-109">R</span><sub><span 
+class="cmmi-8">orig</span></sub>, <span 
+class="cmmi-10x-x-109">P</span><sub><span 
+class="cmmi-8">orig</span></sub>)         </span><br class="algorithmic"/><span class="label-13.14pt">  <span 
+class="cmr-9">4:</span> </span>&#xA0;<span  class="algorithmic">     <span 
+class="cmbx-10x-x-109">if</span>&#x00A0;<span 
+class="cmmi-10x-x-109">R </span>= <span 
+class="cmmi-10x-x-109">R</span><sub><span 
+class="cmmi-8">orig</span></sub> <span 
+class="cmsy-10x-x-109">&#x2227; </span><span 
+class="cmmi-10x-x-109">R.drr</span>&#x00A0;<span 
+class="cmbx-10x-x-109">then</span>         </span><br class="algorithmic"/><span class="label-13.14pt">  <span 
+class="cmr-9">5:</span> </span>&#xA0;<span  class="algorithmic">           <span 
+class="cmbx-10x-x-109">if</span>&#x00A0;<span 
+class="cmmi-10x-x-109">R </span><span 
+class="cmsy-10x-x-109">&#x2208; </span><span 
+class="cmti-10x-x-109">limit</span>&#x00A0;<span 
+class="cmbx-10x-x-109">then</span>         </span><br class="algorithmic"/><span class="label-13.14pt">  <span 
+class="cmr-9">6:</span> </span>&#xA0;<span  class="algorithmic">                <span 
+class="cmbx-10x-x-109">return </span><span 
+class="cmti-10x-x-109">null</span>         </span><br class="algorithmic"/><span class="label-13.14pt">  <span 
+class="cmr-9">7:</span> </span>&#xA0;<span  class="algorithmic">           <span 
+class="cmbx-10x-x-109">else</span>&#x00A0;<span 
+class="cmbx-10x-x-109">if</span>&#x00A0;<span 
+class="cmmi-10x-x-109">P</span><sub><span 
+class="cmmi-8">orig</span></sub> <span 
+class="cmsy-10x-x-109">&#x2208; </span><span 
+class="cmti-10x-x-109">growing</span>[<span 
+class="cmmi-10x-x-109">R</span>]&#x00A0;<span 
+class="cmbx-10x-x-109">then</span>         </span><br class="algorithmic"/><span class="label-13.14pt">  <span 
+class="cmr-9">8:</span> </span>&#xA0;<span  class="algorithmic">                <span 
+class="cmcsc-10x-x-109"><span 
+class="small-caps">a</span><span 
+class="small-caps">d</span><span 
+class="small-caps">d</span></span>(<span 
+class="cmti-10x-x-109">limit</span>, <span 
+class="cmmi-10x-x-109">R</span>)         </span><br class="algorithmic"/><span class="label-13.14pt">  <span 
+class="cmr-9">9:</span> </span>&#xA0;<span  class="algorithmic">                traditional PEG rule application         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">10:</span> </span>&#xA0;<span  class="algorithmic">                <span 
+class="cmcsc-10x-x-109"><span 
+class="small-caps">d</span><span 
+class="small-caps">e</span><span 
+class="small-caps">l</span></span>(<span 
+class="cmti-10x-x-109">limit</span>, <span 
+class="cmmi-10x-x-109">R</span>)         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">11:</span> </span>&#xA0;<span  class="algorithmic">           <span 
+class="cmbx-10x-x-109">else</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">12:</span> </span>&#xA0;<span  class="algorithmic">                traditional PEG rule application         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">13:</span> </span>&#xA0;<span  class="algorithmic">           <span 
+class="cmbx-10x-x-109">end</span>&#x00A0;<span 
+class="cmbx-10x-x-109">if</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">14:</span> </span>&#xA0;<span  class="algorithmic">     <span 
+class="cmbx-10x-x-109">else</span>&#x00A0;<span 
+class="cmbx-10x-x-109">if</span>&#x00A0;<span 
+class="cmmi-10x-x-109">R </span>= <span 
+class="cmmi-10x-x-109">R</span><sub><span 
+class="cmmi-8">orig</span></sub> <span 
+class="cmsy-10x-x-109">&#x2227; </span><span 
+class="cmmi-10x-x-109">P </span><span 
+class="cmsy-10x-x-109">&#x2208; </span><span 
+class="cmti-10x-x-109">growing</span>[<span 
+class="cmmi-10x-x-109">R</span>]&#x00A0;<span 
+class="cmbx-10x-x-109">then</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">15:</span> </span>&#xA0;<span  class="algorithmic">           <span 
+class="cmbx-10x-x-109">return </span><span 
+class="cmti-10x-x-109">growing</span>[<span 
+class="cmmi-10x-x-109">R</span>][<span 
+class="cmmi-10x-x-109">P</span>]         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">16:</span> </span>&#xA0;<span  class="algorithmic">     <span 
+class="cmbx-10x-x-109">else</span>&#x00A0;<span 
+class="cmbx-10x-x-109">if</span>&#x00A0;<span 
+class="cmmi-10x-x-109">R </span>= <span 
+class="cmmi-10x-x-109">R</span><sub><span 
+class="cmmi-8">orig</span></sub> <span 
+class="cmsy-10x-x-109">&#x2227; </span><span 
+class="cmmi-10x-x-109">P </span>= <span 
+class="cmmi-10x-x-109">P</span><sub><span 
+class="cmmi-8">orig</span></sub>&#x00A0;<span 
+class="cmbx-10x-x-109">then</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">17:</span> </span>&#xA0;<span  class="algorithmic">           <span 
+class="cmti-10x-x-109">growing</span>[<span 
+class="cmmi-10x-x-109">R</span>][<span 
+class="cmmi-10x-x-109">P</span>] <span 
+class="cmsy-10x-x-109">&#x2190; </span><span 
+class="cmti-10x-x-109">null</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">18:</span> </span>&#xA0;<span  class="algorithmic">           <span 
+class="cmbx-10x-x-109">while</span>&#x00A0;true&#x00A0;<span 
+class="cmbx-10x-x-109">do</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">19:</span> </span>&#xA0;<span  class="algorithmic">                <span 
+class="cmti-10x-x-109">result </span><span 
+class="cmsy-10x-x-109">&#x2190; </span><span 
+class="cmcsc-10x-x-109"><span 
+class="small-caps">a</span><span 
+class="small-caps">p</span><span 
+class="small-caps">p</span><span 
+class="small-caps">l</span><span 
+class="small-caps">y</span>-<span 
+class="small-caps">r</span><span 
+class="small-caps">u</span><span 
+class="small-caps">l</span><span 
+class="small-caps">e</span></span>(<span 
+class="cmmi-10x-x-109">R</span>, <span 
+class="cmmi-10x-x-109">P</span>, <span 
+class="cmmi-10x-x-109">R</span><sub><span 
+class="cmmi-8">orig</span></sub>, <span 
+class="cmmi-10x-x-109">P</span><sub><span 
+class="cmmi-8">orig</span></sub>)         </span><br class="algorithmic"/><span class="label-13.14pt">  <span 
+class="cmr-9">20:</span> </span>&#xA0;<span  class="algorithmic">                <span 
+class="cmti-10x-x-109">seed </span><span 
+class="cmsy-10x-x-109">&#x2190; </span><span 
+class="cmti-10x-x-109">growing</span>[<span 
+class="cmmi-10x-x-109">R</span>][<span 
+class="cmmi-10x-x-109">P</span>]         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">21:</span> </span>&#xA0;<span  class="algorithmic">                <span 
+class="cmbx-10x-x-109">if</span>&#x00A0;<span 
+class="cmti-10x-x-109">result </span>= <span 
+class="cmti-10x-x-109">null </span><span 
+class="cmsy-10x-x-109">&#x2228; </span>(<span 
+class="cmti-10x-x-109">seed</span> <span 
+class="cmmi-10x-x-109">&#x2260;</span> null <span 
+class="cmsy-10x-x-109">&#x2227; </span><span 
+class="cmti-10x-x-109">result.pos </span><span 
+class="cmmi-10x-x-109">&#x003C; </span><span 
+class="cmti-10x-x-109">seed.pos</span>)&#x00A0;<span 
+class="cmbx-10x-x-109">then</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">22:</span> </span>&#xA0;<span  class="algorithmic">                     remove <span 
+class="cmmi-10x-x-109">P </span>from <span 
+class="cmti-10x-x-109">growing</span>[<span 
+class="cmmi-10x-x-109">R</span>]         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">23:</span> </span>&#xA0;<span  class="algorithmic">                     <span 
+class="cmbx-10x-x-109">return </span><span 
+class="cmti-10x-x-109">seed</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">24:</span> </span>&#xA0;<span  class="algorithmic">                <span 
+class="cmbx-10x-x-109">end</span>&#x00A0;<span 
+class="cmbx-10x-x-109">if</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">25:</span> </span>&#xA0;<span  class="algorithmic">                <span 
+class="cmti-10x-x-109">growing</span>[<span 
+class="cmmi-10x-x-109">R</span>][<span 
+class="cmmi-10x-x-109">P</span>] <span 
+class="cmsy-10x-x-109">&#x2190; </span><span 
+class="cmti-10x-x-109">result</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">26:</span> </span>&#xA0;<span  class="algorithmic">           <span 
+class="cmbx-10x-x-109">end</span>&#x00A0;<span 
+class="cmbx-10x-x-109">while</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">27:</span> </span>&#xA0;<span  class="algorithmic">     <span 
+class="cmbx-10x-x-109">else</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">28:</span> </span>&#xA0;<span  class="algorithmic">           <span 
+class="cmbx-10x-x-109">if</span>&#x00A0;<span 
+class="cmmi-10x-x-109">R </span><span 
+class="cmsy-10x-x-109">&#x2208; </span><span 
+class="cmti-10x-x-109">limit</span>&#x00A0;<span 
+class="cmbx-10x-x-109">then</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">29:</span> </span>&#xA0;<span  class="algorithmic">                <span 
+class="cmcsc-10x-x-109"><span 
+class="small-caps">d</span><span 
+class="small-caps">e</span><span 
+class="small-caps">l</span></span>(<span 
+class="cmti-10x-x-109">limit</span>, <span 
+class="cmmi-10x-x-109">R</span>)         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">30:</span> </span>&#xA0;<span  class="algorithmic">                traditional PEG rule application         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">31:</span> </span>&#xA0;<span  class="algorithmic">                <span 
+class="cmcsc-10x-x-109"><span 
+class="small-caps">a</span><span 
+class="small-caps">d</span><span 
+class="small-caps">d</span></span>(<span 
+class="cmti-10x-x-109">limit</span>, <span 
+class="cmmi-10x-x-109">R</span>)         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">32:</span> </span>&#xA0;<span  class="algorithmic">           <span 
+class="cmbx-10x-x-109">else</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">33:</span> </span>&#xA0;<span  class="algorithmic">                traditional PEG rule application         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">34:</span> </span>&#xA0;<span  class="algorithmic">           <span 
+class="cmbx-10x-x-109">end</span>&#x00A0;<span 
+class="cmbx-10x-x-109">if</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">35:</span> </span>&#xA0;<span  class="algorithmic">     <span 
+class="cmbx-10x-x-109">end</span>&#x00A0;<span 
+class="cmbx-10x-x-109">if</span>         </span><br class="algorithmic"/><span class="label-13.14pt"> <span 
+class="cmr-9">36:</span> </span>&#xA0;<span  class="algorithmic"><span 
+class="cmbx-10x-x-109">end</span>&#x00A0;<span 
+class="cmbx-10x-x-109">function</span></span>
+</div>
+
+   </div><hr class="endfloat" />
+   </div>
+<!--l. 433--><p class="indent" >   Algorithm <a 
+href="#x1-13001r2">2<!--tex4ht:ref: direct left and right recursion apply --></a> shows, in the style of Warth <span 
+class="cmti-10x-x-109">et al.</span>, how PEGs can cope with
+both direct left-recursion and direct definite right-recursion. Presenting the
+algorithm in this fashion does involve some compromises; however, the advantage
+conferred by continuity outweighs the distaste incurred by ugliness. In
+particular, there is a need to convey the information about whether a rule call
+is right-recursive or not. For the sake of simplicity, I assume that the
+<span 
+class="cmmi-10x-x-109">R </span>argument to the <span 
+class="cmcsc-10x-x-80">APPLY-RULE </span>function has a boolean attribute <span 
+class="cmti-10x-x-109">drr</span>
+(Definitely Right-Recursive) which is set to <span 
+class="cmti-10x-x-109">true </span>if that rule is definitely
+right-recursive.
+<!--l. 435--><p class="indent" >   The first thing to note about Algorithm <a 
+href="#x1-13001r2">2<!--tex4ht:ref: direct left and right recursion apply --></a> is that it is really just an
+extension of Algorithm <a 
+href="#x1-6001r1">1<!--tex4ht:ref: direct left recursion apply --></a>&#8212;lines 14&#8211;26 inclusive (the bottom-up parser) are
+unchanged.
+<!--l. 437--><p class="indent" >   The most complex part of Algorithm <a 
+href="#x1-13001r2">2<!--tex4ht:ref: direct left and right recursion apply --></a> relates to calling a right-recursive rule
+(lines 5&#8211;13). We maintain a set <span 
+class="cmti-10x-x-109">limit </span>which contains the rule names of all current
+right-recursive calls (note that <span 
+class="cmti-10x-x-109">limit </span>is global only to maintain symmetry with
+<span 
+class="cmti-10x-x-109">growing</span>; it could as easily be a fifth argument to <span 
+class="cmcsc-10x-x-80">APPLY-RULE</span>). Therefore when
+calling a definitely right-recursive call <span 
+class="cmmi-10x-x-109">R</span>, we first need to see whether we&#8217;re
+already in right-recursion on <span 
+class="cmmi-10x-x-109">R</span>; if so we fail (line 6), in order to ensure
+that right-recursion never goes more than one level deep. If we&#8217;re not in
+right-recursion on a rule, but are in left-recursion (which is implied if <span 
+class="cmmi-10x-x-109">P</span><sub><span 
+class="cmmi-8">orig</span></sub> is in
+<span 
+class="cmti-10x-x-109">growing</span>[<span 
+class="cmmi-10x-x-109">R</span>], meaning that the bottom-up parser is in operation), then we
+add <span 
+class="cmmi-10x-x-109">R </span>to <span 
+class="cmti-10x-x-109">limit </span>and evaluate the rule as normal (lines 8&#8211;10). If we&#8217;re not
+in right or left-recursion, we evaluate the rule purely as normal (line
+12).
+<!--l. 439--><p class="indent" >   The final subtlety in Algorithm <a 
+href="#x1-13001r2">2<!--tex4ht:ref: direct left and right recursion apply --></a> relates to when right-recursion is happening
+in a rule <span 
+class="cmmi-10x-x-109">R </span>and we non-right-recursively call <span 
+class="cmmi-10x-x-109">R</span>. In this case, we need to ensure
+that the non-right-recursive call of <span 
+class="cmmi-10x-x-109">R </span>evaluates as normal, without limiting
+recursion to just one level. Fortunately we do not need to be as explicit as this
+might suggest; it is sufficient to temporarily remove <span 
+class="cmmi-10x-x-109">R </span>from <span 
+class="cmti-10x-x-109">limit </span>(if it exists)
+whenever <span 
+class="cmmi-10x-x-109">R </span>is called and it does not fit into the cases listed above (lines
+28&#8211;34).
+<!--l. 441--><p class="indent" >   Given the following PEG and the string <span 
+class="cmtt-10x-x-109">1-2-3 </span>we get the left-associative
+parse we originally desired:
+   <div class="fancyvrb" id="fancyvrb17">
+<a 
+ id="x1-13003r1"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;"-"</span><span 
+class="cmtt-9">&#x00A0;expr</span><span 
+class="cmtt-9">&#x00A0;/</span><span 
+class="cmtt-9">&#x00A0;num</span>
+<br class="fancyvrb" /><a 
+ id="x1-13005r2"></a><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;num</span><span 
+class="cmtt-9">&#x00A0;</span><span 
+class="cmtt-9">&#x00A0;&#x003C;-</span><span 
+class="cmtt-9">&#x00A0;["0-9"]+</span>
+   </div>
+   <h3 class="sectionHead"><span class="titlemark">7   </span> <a 
+ id="x1-140007"></a>Conclusions</h3>
+<!--l. 450--><p class="noindent" >This paper first presented a &#8216;pure PEG&#8217; adaption of Warth <span 
+class="cmti-10x-x-109">et al.</span>&#8217;s left-recursive
+
+Packrat algorithm. I then showed cases where this algorithm failed, before
+identifying a safe subset of left-recursive PEGs which can be used with
+this algorithm. I then extended the algorithm, allowing left-recursive
+rules with definite right-recursion to work as expected. As this paper
+has shown, in order to safely parse right-recursive PEGs, a number of
+subtle issues need to be considered, and the class of right-recursive PEGs
+safely parseable is smaller than might originally have been hoped for.
+While the obvious next step is to extend the solutions presented in this
+paper to deal with indirect left and indirect right recursion, this may well
+prove to be quite challenging and to impose further restrictions on valid
+PEGs. This therefore raises a deeper philosophical question: are PEGs
+really suited to allowing left-recursion? That question is left to others to
+ponder.
+<!--l. 452--><p class="indent" >   Example code which implements the algorithms in this paper can be found
+at<br 
+class="newline" /><a href="http://tratt.net/laurie/research/pubs/files/direct_left_recursive_pegs/"><span 
+class="cmtt-10">http://tratt.net/laurie/research/pubs/files/direct</span><span 
+class="cmtt-10">_left</span><span 
+class="cmtt-10">_recursive</span><span 
+class="cmtt-10">_pegs</span></a>.
+<!--l. 454--><p class="indent" >   My thanks to Tony Sloane for verifying the problem noted in Section <a 
+href="#x1-80005">5<!--tex4ht:ref: the warth problem --></a> with
+the Packrat implementation in his Kiama tool and providing comments on a
+draft of this paper; to David Hazell, Franco Raimondi, and Chris Hyuck for
+providing comments on a draft of this paper; and to Alessandro Warth for
+answering questions. Any errors and infelicities are my own.
+<!--l. 1--><p class="noindent" >
+   <h3 class="likesectionHead"><a 
+ id="x1-150007"></a>References</h3>
+<!--l. 1--><p class="noindent" >
+    <div class="thebibliography">
+    <p class="bibitem" ><span class="biblabel">
+  [1] </span><a 
+ id="Xearley__an_efficient_context_free_parsing_algorithm"></a>J.&#x00A0;Earley.                                                                       An
+    efficient context-free parsing algorithm. <span 
+class="cmti-10x-x-109">Communications of the ACM</span>,
+    13(2), Feb. 1970.
+    </p>
+    <p class="bibitem" ><span class="biblabel">
+  [2] </span><a 
+ id="Xford__packrat_parsing_simple_powerful_lazy_linear_time_functional_pearl"></a>B.&#x00A0;Ford.  Packrat parsing: Simple, powerful, lazy, linear time.  In
+    <span 
+class="cmti-10x-x-109">International  Conference  on  Functional  Programming</span>,  pages  36&#8211;47,
+    Oct. 2002.
+    </p>
+    <p class="bibitem" ><span class="biblabel">
+  [3] </span><a 
+ id="Xford__parsing_expression_grammars_a_recognition_based_syntactic_foundation"></a>B.&#x00A0;Ford.     Parsing  expression  grammars:  a  recognition-based
+    syntactic foundation. In <span 
+class="cmti-10x-x-109">Proc. POPL</span>, pages 111&#8211;122. ACM, Jan. 2004.
+
+    </p>
+    <p class="bibitem" ><span class="biblabel">
+  [4] </span><a 
+ id="Xgrimm__better_extensibility_through_modular_syntax"></a>R.&#x00A0;Grimm.       Better   extensibility   through   modular   syntax.
+    volume&#x00A0;14 of <span 
+class="cmti-10x-x-109">Proc. Programming language design and implementation</span>,
+    pages 38&#8211;51, June 2006.
+    </p>
+    <p class="bibitem" ><span class="biblabel">
+  [5] </span><a 
+ id="Xgrune_jacobs__parsing_techniques"></a>D.&#x00A0;Grune and C.&#x00A0;J. Jacobs. <span 
+class="cmti-10x-x-109">Parsing techniques</span>. 1998.
+    </p>
+    <p class="bibitem" ><span class="biblabel">
+  [6] </span><a 
+ id="Xredziejowski__some_aspects_of_parsing_expression_grammar"></a>R.&#x00A0;R. Redziejowski.  Some aspects of parsing expression grammar.
+    <span 
+class="cmti-10x-x-109">Fundamenta Informaticae</span>, 85(1-4):441&#8211;451, 2008.
+    </p>
+    <p class="bibitem" ><span class="biblabel">
+  [7] </span><a 
+ id="Xseaton__a_programming_language_where_the_syntax_and_semantics_are_mutable_at_runtime"></a>C.&#x00A0;Seaton.     A  programming  language  where  the  syntax  and
+    semantics are mutable at runtime. Master&#8217;s thesis, University of Bristol,
+    May 2007.
+    </p>
+    <p class="bibitem" ><span class="biblabel">
+  [8] </span><a 
+ id="Xtratt__domain_specific_language_implementation_via_compile_time_meta_programming"></a>L.&#x00A0;Tratt.        Domain   specific   language   implementation   via
+    compile-time meta-programming. <span 
+class="cmti-10x-x-109">TOPLAS</span>, 30(6):1&#8211;40, 2008.
+    </p>
+    <p class="bibitem" ><span class="biblabel">
+  [9] </span><a 
+ id="Xvisser__scannerless_generalized_lr_parsing"></a>E.&#x00A0;Visser.  Scannerless generalized-LR parsing.  Technical Report
+    P9707, Programming Research Group, University of Amsterdam, July
+    1997.
+    </p>
+    <p class="bibitem" ><span class="biblabel">
+ [10] </span><a 
+ id="Xwarth_douglas_millstein__packrat_parsers_can_support_left_recursion"></a>A.&#x00A0;Warth,  J.&#x00A0;Douglass,  and  T.&#x00A0;Millstein.   Packrat  parsers  can
+    support left recursion. In <span 
+class="cmti-10x-x-109">Proc. PEPM</span>, pages 103&#8211;110. ACM, Jan. 2008.
+    </p>
+    <p class="bibitem" ><span class="biblabel">
+ [11] </span><a 
+ id="Xwarth_piumarta__ometa_an_object_oriented_language_for_pattern_matching"></a>A.&#x00A0;Warth and I.&#x00A0;Piumarta.  OMeta: an object-oriented language
+    for pattern matching. In <span 
+class="cmti-10x-x-109">Proc. Dynamic Languages Symposium</span>, pages
+    11&#8211;19. ACM, 2007.
+</p>
+    </div>
+
+    
+</div>
+</td>
+</tr>
+
+<tr>
+<td>
+<Table id="footer">
+<tr>
+<td align = "left"><a href = "/laurie/">Home</a> > <a href="../../../">Research</a> > <a href="../../">Publications</a></td>
+<TD Align = "Right">e-mail: <A HRef = "mailto:laurie@tratt.net">laurie@tratt.net</A> &nbsp;&nbsp; github: <a href="https://github.com/ltratt/">ltratt</a> &nbsp;&nbsp; twitter: <a href="http://twitter.com/laurencetratt">@laurencetratt</a></TD>
+</tr>
+</Table>
+</td>
+</tr>
+</table>
+
+</Body>
+</HTML>
