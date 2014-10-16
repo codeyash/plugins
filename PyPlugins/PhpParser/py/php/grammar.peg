@@ -1,0 +1,71 @@
+# Grammar is defined using textual specification based on PEG language.
+
+# PHP analysis (partial)
+
+start = ( phpstart expression* ) / r'.*'
+
+expression = comment / namespace / usenamespace / exp_class / variable / symbol / word  
+
+exp_class = class / classfunction / function / classvariable
+
+#php rule
+phpstart = "<?php" / "<?"
+
+#comments consume and remove  text
+comment = r'(#.*\n)|(//.*\n)|(/\\*(.|\\n)*?\\*/)'
+
+# namespace rule
+namespace = "namespace" r'[a-zA-Z0-9\\\\]+' ";"
+
+# use namespace rule
+usenamespace = "use" r'[a-zA-Z0-9\\\\]+' ";"
+
+#abstractclass
+abstractclass = "abstract"* class
+
+# class rule
+class ="class" word ( "extends" ( word ","* )* )* ( "implements" ( word ","* )* )* "{"
+
+# function rule
+classfunction = (visibility function)
+function = "function" word arguments* "{"
+block = "{" r'[^}]*' "}"
+arguments = "(" argument* ")"
+
+#$types = array("cappuccino")
+#arguments end with optional comma
+argument = word* ( byvalue / byreference ) ("=" value )* ","*
+byreference = "&" variable
+byvalue = variable
+
+#protected $bootingCallbacks = array();
+classvariable = visibility variable ( "=" value )* ";"
+
+#value may be variable or array or string or any php type 
+#Need to add more like array
+value = variable / word / string 
+
+visibility = "public" / "protected" / "private"
+
+variable = r'\$[a-zA-z]+[a-zA-Z0-9_]*'
+
+
+string = ('"' word* '"' ) / ( "'" word* "'" )
+word = r'[a-zA-Z0-9_]+'
+literal = r'[a-zA-Z]+'
+
+
+symbol = r'[\W]+'
+
+anyword = r'[\w]*'
+ws = r'[\s]+'
+
+
+
+
+# (/\\*[^/]*\\*/)
+
+# /\*(.|\n)*?\*/'
+#/ multilinecomment
+#(/\\\\*[^\\\\*]*\\\\*/)
+#multilinecomment = "/*" r'[.|\\n]*' "*/"

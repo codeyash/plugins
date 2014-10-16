@@ -1,3 +1,5 @@
 /Ignore/*
 *.pro.user
 /PyPlugins/PhpParser/py/__pycache__/*
+/PyPlugins/PhpParser/py/waste/*
+/PyPlugins/PhpParser/py/dumps/*

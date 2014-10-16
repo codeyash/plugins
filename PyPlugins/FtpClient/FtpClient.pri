@@ -1,5 +1,5 @@
 include(../../LibPythonQt/build/PythonQt.prf)
-include(../../LibPythonQt/build/PythonQt_QtAll.prf)
+include(../../Libs/LibPythonQt/build/PythonQt_QtAll.prf)
 
 QT += widgets uitools network
 
